@@ -1,9 +1,11 @@
 #imports all vital libraries for the game
+import sys
+
 import pygame
 import time
 import random
 from sys import exit
-
+sys.setrecursionlimit(2000)
 pygame.init()
 global screen
 screen = pygame.display.set_mode((1280, 720)) #sets the game window size
@@ -91,26 +93,20 @@ def load_game_background_loop():
     Foreground = pygame.image.load("Assets/Background stuff/foreground.png")
 
     cloud1 = pygame.image.load("Assets/Background stuff/cloud_sunny_1.png")
+    cloud_1_x = 0
+    cloud_1_y = random.randint(1,80)
+
     cloud2 = pygame.image.load("Assets/Background stuff/cloud_sunny_2.png")
     cloud3 = pygame.image.load("Assets/Background stuff/cloud_sunny_3.png")
-
-    cloud_1_x = 0 #cloud starts at left most point of sky
-    cloud_1_y = random.randint(0,80) #clouds starts at random y level in sky for randomness
-    cloud_1_vel = 4 #cloud speed
-
-    cloud_2_trigger = random.randint(300,600)
-    cloud_2_x = 0
-    cloud_2_y = random.randint(0,80)
-    cloud_2_vel = 4
-
-    cloud_3_trigger = random.randint(600,900)
-    cloud_3_x = 0
-    cloud_3_y = random.randint(0,80)
-    cloud_3_vel = 4
 
     while game_background_running:
         screen.blit(Sky, (0, 0))
         screen.blit(Foreground, (0, 0))
+
+        screen.blit(cloud1,(cloud_1_x,cloud_1_y))
+        cloud_1_x+=3
+        if cloud_1_x>=1280:
+            cloud_1_x = 0
 
         for event in pygame.event.get(): #tells me where mouse is clicked, allows X to quit game without error
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -119,33 +115,6 @@ def load_game_background_loop():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
-
-#---------------CLOUD CODE---------------------
-        screen.blit(cloud1, (cloud_1_x, cloud_1_y)) #spawns first cloud
-        cloud_1_x += cloud_1_vel #updates cloud location for velocity
-
-        if cloud_1_x >= 1280: #if too far right...
-            cloud_1_x = 0 #sets cloud back to left side
-            cloud_1_y = random.randint(0,80) #sets clouds random y level
-            cloud_2_trigger = random.randint(300,600)
-
-        if cloud_1_x > cloud_2_trigger: #is cloud 1 far enough to spawn cloud 2?
-            screen.blit(cloud2, (cloud_2_x, cloud_2_y))
-            cloud_2_x += cloud_2_vel
-
-        if cloud_2_x >= 1280: #if cloud 2 too far right...
-            cloud_2_x = 0 #sets cloud 2 back to left side
-            cloud_2_y = random.randint(0,80) #sets cloud 2 random y level
-            cloud_3_trigger = random.randint(600,900)
-
-        if cloud_2_x > cloud_3_trigger:
-            screen.blit(cloud3, (cloud_3_x, cloud_3_y))
-            cloud_3_x += cloud_3_vel
-
-        if cloud_3_x >= 1280: #if cloud 3 too far right...
-            cloud_3_x = 0 #sets cloud 3 back to left side
-            cloud_3_y = random.randint(0,80) #sets cloud 3 random y level
-#---------------END OF CLOUD CODE-------------------
 
         pygame.display.update()
         Clock.tick(FPS)
