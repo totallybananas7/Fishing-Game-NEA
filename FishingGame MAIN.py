@@ -18,10 +18,11 @@ Clock = pygame.time.Clock()
 #TIPS:
 #USE FORWARD SLASHES FOR FILE PATHS
 #REMEMBER FOR LOCATIONS IT GOES DEST:(X,Y)
+#WHEN LOADING GAME SPRITES, USE THE .convert_alpha() AT THE END TO CONVERT TO A FILE TYPE PYGAME LIKES MORE
 
 def main_menu_loop():
     Main_menu_running = True
-    BG = pygame.image.load("Assets/Menus/Main_menu_background.png") #loads background image once
+    BG = pygame.image.load("Assets/Menus/Main_menu_background.png").convert_alpha() #loads background image once
     Text_font = pygame.font.Font("PressStart2P-Regular.ttf", 20)
 
     main_menu_background_music = pygame.mixer.Sound("Assets/Menus/Main_menu_background_music.mp3") #sets main menu background music file as a variable
@@ -89,24 +90,39 @@ def fadeout(fadespeed=1): #defines fadeout function to have a smooth transition 
 
 def load_game_background_loop():
     game_background_running = True
-    Sky = pygame.image.load("Assets/Background stuff/background_day_sunny.png")
-    Foreground = pygame.image.load("Assets/Background stuff/foreground.png")
+    Sky = pygame.image.load("Assets/Background stuff/background_day_sunny.png").convert_alpha() #loads bg
+    Foreground = pygame.image.load("Assets/Background stuff/foreground.png").convert_alpha() #loads fg
 
-    cloud1 = pygame.image.load("Assets/Background stuff/cloud_sunny_1.png")
-    cloud_1_x = 0
-    cloud_1_y = random.randint(1,80)
+    cloud1 = pygame.image.load("Assets/Background stuff/cloud_sunny_1.png").convert_alpha() #loads cloud
+    cloud_1_x = 0 #sets cloud start x pos
+    cloud_1_y = random.randint(1,25) #sets cloud start y pos
 
-    cloud2 = pygame.image.load("Assets/Background stuff/cloud_sunny_2.png")
-    cloud3 = pygame.image.load("Assets/Background stuff/cloud_sunny_3.png")
+    cloud2 = pygame.image.load("Assets/Background stuff/cloud_sunny_2.png").convert_alpha()
+    cloud_2_x = 500
+    cloud_2_y = random.randint(35,65)
+
+    cloud3 = pygame.image.load("Assets/Background stuff/cloud_sunny_3.png").convert_alpha()
+    cloud_3_x = 1000
+    cloud_3_y = random.randint(75,95)
 
     while game_background_running:
         screen.blit(Sky, (0, 0))
         screen.blit(Foreground, (0, 0))
 
-        screen.blit(cloud1,(cloud_1_x,cloud_1_y))
-        cloud_1_x+=3
-        if cloud_1_x>=1280:
-            cloud_1_x = 0
+        screen.blit(cloud1,(cloud_1_x,cloud_1_y)) #displays cloud
+        cloud_1_x+=1 #moves cloud 1 pixel left
+        if cloud_1_x>=1280: #checks to see if cloud to far right off screen
+            cloud_1_x = 0 #moves cloud back to the start
+
+        screen.blit(cloud2, (cloud_2_x, cloud_2_y))
+        cloud_2_x += 0.4
+        if cloud_2_x >= 1280:
+            cloud_2_x = 0
+
+        screen.blit(cloud3, (cloud_3_x, cloud_3_y))
+        cloud_3_x += 0.8
+        if cloud_3_x >= 1280:
+            cloud_3_x = 0
 
         for event in pygame.event.get(): #tells me where mouse is clicked, allows X to quit game without error
             if event.type == pygame.MOUSEBUTTONDOWN:
