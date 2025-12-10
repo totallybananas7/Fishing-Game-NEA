@@ -135,7 +135,14 @@ def load_game_background_loop():
         pygame.display.update()
         Clock.tick(FPS)
 
+def player_movement():
+    player_movement_left = [pygame.image.load("Assets/Character sprite sheet/male_left_stand.png")
+                            pygame.image.load("Assets/Character sprite sheet/male_1_left_walk.png")
+                            pygame.image.load("Assets/Character sprite sheet/male_2_left_walk.png")
+                            pygame.image.load("Assets/Character sprite sheet/male_3_left_walk.png")
+                            pygame.image.load("Assets/Character sprite sheet/male_4_left_walk.png")
 
+                            ]
 
 # run main menu
 main_menu_loop()
