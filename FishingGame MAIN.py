@@ -79,6 +79,7 @@ def main_menu_loop():
         Clock.tick(FPS)
 
 # ------------------------------------------------------------------------------------------------------------------
+
 def fadeout(fadespeed=1): #defines fadeout function to have a smooth transition and sets the speed of it to 1
     fade = pygame.Surface((1280, 720)) #creates blank surface the size of the screen
     fade.fill((0, 0, 0)) #fills entire surface to black
@@ -88,116 +89,120 @@ def fadeout(fadespeed=1): #defines fadeout function to have a smooth transition 
         pygame.display.update() #updates the game
         pygame.time.delay(20) #waits 20ms before continuing to the next loop
 
+#--------------------------------------------------------------------------------------------------------------------
+
 def main_game(): #all game stuff goes in here
     game_running = True #sets main game loop
 
-#-----------SPRITE LOADING------------
+#-----------GENERAL SPRITE LOADING------------
     Sky = pygame.image.load("Assets/Background stuff/background_day_sunny.png").convert_alpha()  # loads bg
     Foreground = pygame.image.load("Assets/Background stuff/foreground.png").convert_alpha()  # loads fg
-
-# ---------- loading cloud sprites -----------
     cloud1 = pygame.image.load("Assets/Background stuff/cloud_sunny_1.png").convert_alpha()  # loads cloud
-    cloud_1_x = 0  # sets cloud start x pos
-    cloud_1_y = random.randint(1, 25)  # sets cloud start y pos
     cloud2 = pygame.image.load("Assets/Background stuff/cloud_sunny_2.png").convert_alpha()
-    cloud_2_x = 500
-    cloud_2_y = random.randint(35, 65)
     cloud3 = pygame.image.load("Assets/Background stuff/cloud_sunny_3.png").convert_alpha()
-    cloud_3_x = 1000
-    cloud_3_y = random.randint(75, 95)
-# ---------- loading cloud sprites end -----------
 
-# ---------- loading player sprites --------------
+    cloud_1_x = 0  # sets cloud start x pos
+    cloud_1_y = random.randint(1, 20)  # sets cloud start y pos
+    cloud_2_x = 500
+    cloud_2_y = random.randint(25, 45)
+    cloud_3_x = 900
+    cloud_3_y = random.randint(50, 70)
 
+    player_sprites= [pygame.image.load("Assets/Character sprite sheet/male_left_stand.png").convert_alpha(), #creates list of sprites
+                     pygame.image.load("Assets/Character sprite sheet/male_1_left_walk.png").convert_alpha(), #list position 1
+                     pygame.image.load("Assets/Character sprite sheet/male_2_left_walk.png").convert_alpha(), #2
+                     pygame.image.load("Assets/Character sprite sheet/male_3_left_walk.png").convert_alpha(), #3
+                     pygame.image.load("Assets/Character sprite sheet/male_4_left_walk.png").convert_alpha(), #4
+                     pygame.image.load("Assets/Character sprite sheet/male_right_stand.png").convert_alpha(), #5
+                     pygame.image.load("Assets/Character sprite sheet/male_1_right_walk.png").convert_alpha(), #6
+                     pygame.image.load("Assets/Character sprite sheet/male_2_right_walk.png").convert_alpha(), #7
+                     pygame.image.load("Assets/Character sprite sheet/male_3_right_walk.png").convert_alpha(), #8
+                     pygame.image.load("Assets/Character sprite sheet/male_4_right_walk.png").convert_alpha()] #9
 
-# -----------SPRITE LOADING END-----------
+    player_sprite_count = 5  # creates value to iterate through the animation list above, with the player facing right once spawned
+    player_speed = 5
+    player_x_coordinate = 100
+    animation_timer = 0
+    animation_speed = 9 #sets how quick the animations for the player will play
 
-    #------------ MAIN GAME LOOP ---------------
+# -----------GENERAL SPRITE LOADING END-----------
+
+# ------------ MAIN GAME LOOP ---------------
     while game_running:
-        screen.blit(Sky, (0, 0))
-        screen.blit(Foreground, (0, 0))
+        screen.blit(Sky,(0,0))
+        screen.blit(Foreground,(0,0))
 
-# ---------- loading cloud sprites -----------
-        screen.blit(cloud1, (cloud_1_x, cloud_1_y))  # displays cloud
+# ------------ loading cloud sprites ----------------
+        screen.blit(cloud1,(cloud_1_x,cloud_1_y))  # displays cloud
         cloud_1_x += 1  # moves cloud 1 pixel left
-        if cloud_1_x >= 1280:  # checks to see if cloud to far right off screen
+        if cloud_1_x >= 1280:  # checks to see if cloud to far right off-screen
             cloud_1_x = 0  # moves cloud back to the start
 
-        screen.blit(cloud2, (cloud_2_x, cloud_2_y))
+        screen.blit(cloud2,(cloud_2_x,cloud_2_y))
         cloud_2_x += 0.4
         if cloud_2_x >= 1280:
             cloud_2_x = 0
 
-        screen.blit(cloud3, (cloud_3_x, cloud_3_y))
+        screen.blit(cloud3,(cloud_3_x,cloud_3_y))
         cloud_3_x += 0.8
         if cloud_3_x >= 1280:
             cloud_3_x = 0
-# ------------ loading cloud sprites -----------
+#------------- loading cloud sprites end ------------
 
-        for event in pygame.event.get():  # tells me where mouse is clicked, allows X to quit game without error
+#------------------ player movement -----------------
+
+        for event in pygame.event.get(): #handles quitting and debug code
             if event.type == pygame.MOUSEBUTTONDOWN:
                 menu_mouse_pos_test = pygame.mouse.get_pos()
-                print("Mouse clicked at", menu_mouse_pos_test)
+                print("Mouse clicked at",menu_mouse_pos_test)
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
 
+        key = pygame.key.get_pressed() #records the keyboard/mouse for any inputs
 
-
-def player_movement():
-
-    player_sprites= [pygame.image.load("Assets/Character sprite sheet/male_left_stand.png").convert_alpha(), #creates list of sprites
-                    pygame.image.load("Assets/Character sprite sheet/male_1_left_walk.png").convert_alpha(), #1
-                    pygame.image.load("Assets/Character sprite sheet/male_2_left_walk.png").convert_alpha(), #2
-                    pygame.image.load("Assets/Character sprite sheet/male_3_left_walk.png").convert_alpha(), #3
-                    pygame.image.load("Assets/Character sprite sheet/male_4_left_walk.png").convert_alpha(), #4
-                    pygame.image.load("Assets/Character sprite sheet/male_right_stand.png").convert_alpha(), #5
-                    pygame.image.load("Assets/Character sprite sheet/male_1_right_walk.png").convert_alpha(), #6
-                    pygame.image.load("Assets/Character sprite sheet/male_2_right_walk.png").convert_alpha(), #7
-                    pygame.image.load("Assets/Character sprite sheet/male_3_right_walk.png").convert_alpha(), #8
-                    pygame.image.load("Assets/Character sprite sheet/male_4_right_walk.png").convert_alpha()] #9
-
-    p_sprite_count = 5 #creates value to iterate through the animation list above, with the player facing right once spawned
-    player_speed = 30
-    player_x_coordinate = 100
-
-    run = True
-    while run:
-        for event in pygame.event.get(): #handles quitting
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                exit()
-
-            key = pygame.key.get_pressed() #records the keyboard/mouse for any inputs
-
-            if key[pygame.K.d]: #if D is pressed...
+        if key[pygame.K_a]: #if a is pressed...
+            if D == True: #if the user last walked right and are now walking left...
+                player_sprite_count = 5 #set the animation loop to the 5th sprite
+                D = False #last walked right is now false
+            animation_timer+=1
+            if animation_timer>animation_speed:
                 player_sprite_count += 1 #update sprite by one
-                if player_sprite_count > 9: #if sprite has done a full walk cycle...
-                    player_sprite_count = 6 #set back to first step of cycle
+                animation_timer = 0
+            else:
+                animation_timer+=1
 
-            elif key[pygame.K.a]:
+            player_x_coordinate-=player_speed
+            if player_x_coordinate <-30: #if too far left...
+                player_x_coordinate += player_speed #stop player from going further
+            if player_sprite_count > 9: #if sprite has done a full walk cycle...
+                player_sprite_count = 6 #set back to first step of cycle
+
+        elif key[pygame.K_d]:
+            D = True
+            animation_timer+=1
+            if animation_timer>animation_speed:
                 player_sprite_count += 1
-                if player_sprite_count > 4:
-                    player_sprite_count = 1
+                animation_timer = 0
+            else:
+                animation_timer+=1
 
-            else: #if the player is not moving...
-                if player_sprite_count >= 1:
-                    if player_sprite_count <=4:
-                        player_sprite_count = 0
-                elif player_sprite_count >=6:
-                    if player_sprite_count <=9:
-                        player_sprite_count = 5
+            player_x_coordinate+=player_speed
+            if player_x_coordinate >640:
+                player_x_coordinate -=player_speed
+            if player_sprite_count > 4:
+                player_sprite_count = 0
 
-            screen.blit(player_sprites[p_sprite_count], (player_x_coordinate, 300))
+        else: #if the player is not moving...
+            if 1<=player_sprite_count<=4:
+                player_sprite_count = 0
+            elif 6<=player_sprite_count<=9:
+                player_sprite_count = 5
 
-    pygame.display.update()
-    Clock.tick(FPS)
-
-
-
-
-
-
+        screen.blit(player_sprites[player_sprite_count], (player_x_coordinate, 265)) #put the player on screen and update the sprite
+#-------- player movement end -------------
+        pygame.display.update()
+        Clock.tick(FPS)
 
 # run main menu
 main_menu_loop()
