@@ -105,6 +105,10 @@ def main_game(): #all game stuff goes in here
     weather_duration = random.randint(180000,420000) #creates the weather duration variable used in the while loop between 3 and 7 minutes
     last_weather_tick = pygame.time.get_ticks()
 
+    day = True #sets time to day
+    daynight_duration = 600000 #sets how long a day and a night is (600000 is 10 minutes)
+    last_daynight_tick = pygame.time.get_ticks()
+
     Sunny_Sky_Day = pygame.image.load("Assets/Background stuff/background_day_sunny.png").convert_alpha()
     Rainy_Sky_Day = pygame.image.load("Assets/Background stuff/background_day_rain.png").convert_alpha()
     FogSnow_Sky_Day = pygame.image.load("Assets/Background stuff/background_day_fog_snow.png").convert_alpha()
@@ -191,6 +195,23 @@ def main_game(): #all game stuff goes in here
     animation_timer = 0
     animation_speed = 9 #sets how quick the animations for the player will play
 
+    background_musics= [pygame.mixer.Sound("Assets/Background stuff/Dave the Diver OST - On the boat.mp3"), #0 Day Clear
+                        pygame.mixer.Sound("Assets/Background stuff/Star Wars - Kamino Theme.mp3"), #1 Day Rain
+                        pygame.mixer.Sound("Assets/Background stuff/C418 - Sweden - Minecraft Volume Alpha.mp3"), #2 Day Fog
+                        pygame.mixer.Sound("Assets/Background stuff/Dave the Diver OST - Diver.mp3"), #3 Day Snow
+                        pygame.mixer.Sound("Assets/Background stuff/Dave the Diver OST - Night Diving.mp3"), #4 Night Clear
+                        pygame.mixer.Sound("Assets/Background stuff/Dave the Diver OST - The Blue Hole.mp3"), #5 Night Rain
+                        pygame.mixer.Sound("Assets/Background stuff/Dave the Diver OST - Darker Trenches.mp3"), #6 Night Fog
+                        pygame.mixer.Sound("Assets/Background stuff/Dave the Diver OST - Ice Level (Preserved Realm).mp3")] #7 Night Snow
+
+    for music in background_musics:
+        music.set_volume(0.05) #sets each bg musics volume to 50%
+
+    current_background_music = None #creates variable to store current music playing
+    current_background_music_index = -1 #creates variable to store current music playing's position for the bg music's index
+    new_background_music_index = 0 #creates variable to store the next music's index in the bg music list
+
+
 # -----------GENERAL SPRITE LOADING END-----------
 
 # ------------ MAIN GAME LOOP ---------------
@@ -198,9 +219,17 @@ def main_game(): #all game stuff goes in here
 
 #----------------- WEATHER START -------------
         current_time = pygame.time.get_ticks() #gets current game tick
+
+        if current_time - last_daynight_tick >= daynight_duration: #if time passed is equal to daynight length
+            last_daynight_tick = current_time
+            if day == True:
+                day = False #turn to night
+            else:
+                day = True #turn to day
+
         if current_time - last_weather_tick >= weather_duration: #if the time passed is equal to the random weather duration
             last_weather_tick = current_time #resets timer
-            weather_duration = random.randint(180000,420000)  # creates the weather duration variable between 3 (180000)and 7 (420000) minutes
+            weather_duration = random.randint(180000,420000)  # creates the new weather duration variable between 3 (180000)and 7 (420000) minutes
             new_weather = random.choice(weather_list)
             fog = False
             rain = False
@@ -210,22 +239,55 @@ def main_game(): #all game stuff goes in here
             current_weather = new_weather #updates weather
 
             if current_weather == "clear": #updating background
-                weather_bg = Sunny_Sky_Day
-                cloud1 = cloud_sunny_1
-                cloud2 = cloud_sunny_2
-                cloud3 = cloud_sunny_3
+                if day == True:
+                    weather_bg = Sunny_Sky_Day
+                    cloud1 = cloud_sunny_1
+                    cloud2 = cloud_sunny_2
+                    cloud3 = cloud_sunny_3
+                    new_background_music_index = 0 #sets new bg music
+                else:
+                    weather_bg = Clear_Sky_Night
+                    cloud1 = cloud_sunny_1
+                    cloud2 = cloud_sunny_2
+                    cloud3 = cloud_sunny_3
+                    new_background_music_index = 4
+
             elif current_weather == "raining":
-                weather_bg = Rainy_Sky_Day
-                cloud1 = cloud_rainy_1
-                cloud2 = cloud_rainy_2
-                cloud3 = cloud_rainy_3
-                rain = True
-            elif current_weather == "snowing":
-                weather_bg = FogSnow_Sky_Day
-                snow = True
+                if day == True:
+                    weather_bg = Rainy_Sky_Day
+                    cloud1 = cloud_rainy_1
+                    cloud2 = cloud_rainy_2
+                    cloud3 = cloud_rainy_3
+                    rain = True
+                    new_background_music_index = 1
+                else:
+                    weather_bg = Rainy_Sky_Night
+                    cloud1 = cloud_rainy_1
+                    cloud2 = cloud_rainy_2
+                    cloud3 = cloud_rainy_3
+                    rain = True
+                    new_background_music_index = 5
+
             elif current_weather == "fog":
-                weather_bg = FogSnow_Sky_Day
-                fog = True
+                if day == True:
+                    weather_bg = FogSnow_Sky_Day
+                    fog = True
+                    new_background_music_index = 2
+                else:
+                    weather_bg = FogSnow_Sky_Night
+                    fog = True
+                    new_background_music_index = 6
+
+            elif current_weather == "snowing":
+                if day == True:
+                    weather_bg = FogSnow_Sky_Day
+                    snow = True
+                    new_background_music_index = 3
+                else:
+                    weather_bg = FogSnow_Sky_Night
+                    snow = True
+                    new_background_music_index = 7
+
 
         screen.blit(weather_bg,(0,0))
         screen.blit(Foreground,(0,0))
@@ -255,6 +317,14 @@ def main_game(): #all game stuff goes in here
             for snow_drop in snow_drops:
                 snow_drop.snow_precipitate()
                 snow_drop.snow_display()
+
+        if new_background_music_index != current_background_music_index: #switch music only if it has changed
+            if current_background_music != None:
+                current_background_music = current_background_music.fadeout(3000) #fade out current bg music for 3s
+
+            current_background_music = background_musics[new_background_music_index] #selects music
+            current_background_music.play(-1) #play new music
+            current_background_music_index = new_background_music_index #updates tracker
 
 
 #------------------ WEATHER END ---------------------
