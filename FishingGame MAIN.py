@@ -1,5 +1,7 @@
 #imports all vital libraries for the game
 import sys
+from multiprocessing.connection import \
+    default_family
 
 import pygame
 import time
@@ -95,11 +97,37 @@ def main_game(): #all game stuff goes in here
     game_running = True #sets main game loop
 
 #-----------GENERAL SPRITE LOADING------------
-    Sky = pygame.image.load("Assets/Background stuff/background_day_sunny.png").convert_alpha()  # loads bg
+
     Foreground = pygame.image.load("Assets/Background stuff/foreground.png").convert_alpha()  # loads fg
-    cloud1 = pygame.image.load("Assets/Background stuff/cloud_sunny_1.png").convert_alpha()  # loads cloud
-    cloud2 = pygame.image.load("Assets/Background stuff/cloud_sunny_2.png").convert_alpha()
-    cloud3 = pygame.image.load("Assets/Background stuff/cloud_sunny_3.png").convert_alpha()
+
+    weather_list = ["clear","raining","snowing","fog"] #sets the weathers
+    current_weather = weather_list[0] #sets default weather to clear
+    weather_duration = random.randint(180000,420000) #creates the weather duration variable used in the while loop between 3 and 7 minutes
+    last_weather_tick = pygame.time.get_ticks()
+
+    Sunny_Sky_Day = pygame.image.load("Assets/Background stuff/background_day_sunny.png").convert_alpha()
+    Rainy_Sky_Day = pygame.image.load("Assets/Background stuff/background_day_rain.png").convert_alpha()
+    FogSnow_Sky_Day = pygame.image.load("Assets/Background stuff/background_day_fog_snow.png").convert_alpha()
+    Clear_Sky_Night = pygame.image.load("Assets/Background stuff/background_night.png").convert_alpha()
+    Rainy_Sky_Night = pygame.image.load("Assets/Background stuff/background_night_rain.png").convert_alpha()
+    FogSnow_Sky_Night = pygame.image.load("Assets/Background stuff/background_night_fog_snow.png").convert_alpha()
+    cloud_sunny_1 = pygame.image.load("Assets/Background stuff/cloud_sunny_1.png").convert_alpha()
+    cloud_sunny_2 = pygame.image.load("Assets/Background stuff/cloud_sunny_2.png").convert_alpha()
+    cloud_sunny_3 = pygame.image.load("Assets/Background stuff/cloud_sunny_3.png").convert_alpha()
+    cloud_rainy_1 = pygame.image.load("Assets/Background stuff/cloud_rain_1.png").convert_alpha()
+    cloud_rainy_2 = pygame.image.load("Assets/Background stuff/cloud_rain_2.png").convert_alpha()
+    cloud_rainy_3 = pygame.image.load("Assets/Background stuff/cloud_rain_3.png").convert_alpha()
+    rain_particle = pygame.image.load("Assets/Background stuff/weather_rain.png").convert_alpha()
+    snow_particle = pygame.image.load("Assets/Background stuff/weather_snow.png").convert_alpha()
+    fog_particle = pygame.image.load("Assets/Background stuff/weather_fog.png").convert_alpha()
+
+    weather_bg = Sunny_Sky_Day
+    cloud1 = cloud_sunny_1
+    cloud2 = cloud_sunny_2
+    cloud3 = cloud_sunny_3
+    fog = False
+    rain = False
+    snow = False
 
     cloud_1_x = 0  # sets cloud start x pos
     cloud_1_y = random.randint(1, 20)  # sets cloud start y pos
@@ -107,6 +135,44 @@ def main_game(): #all game stuff goes in here
     cloud_2_y = random.randint(25, 45)
     cloud_3_x = 900
     cloud_3_y = random.randint(50, 70)
+
+    class drop(): #creating rain class
+        def __init__(self):
+            self.x = random.randint(0,1280) #horizontal start point
+            self.y = random.randint(-200,-100)#vertical start point
+            self.speed = random.randint(10,20)#raindrop speed
+
+        def precipitate(self):
+            self.y += self.speed #moves rain based off speed
+            if self.y>=740: #resets drop when off screen
+                self.x = random.randint(0,1280)
+                self.y = random.randint(-200,-100)
+
+        def display(self):
+            screen.blit(rain_particle,(self.x,self.y)) #displays particle
+
+    rain_drops = [] #creates a list of falling rain
+    for i in range(200): #creates 200 drops
+        rain_drops.append(drop()) #adds rain drop
+
+    class snow_drop(): #creating snow class
+        def __init__(self):
+            self.x = random.randint(0,1280) #horizontal start point
+            self.y = random.randint(-200,-100)#vertical start point
+            self.speed = random.randint(5,10)#snow speed
+
+        def snow_precipitate(self):
+            self.y += self.speed #moves snow based off speed
+            if self.y>=740: #resets drop when off screen
+                self.x = random.randint(0,1280)
+                self.y = random.randint(-200,-100)
+
+        def snow_display(self):
+            screen.blit(snow_particle,(self.x,self.y)) #displays particle
+
+    snow_drops = [] #creates a list of falling snow
+    for i in range(200): #creates 200 drops
+        snow_drops.append(snow_drop()) #adds snow drop
 
     player_sprites= [pygame.image.load("Assets/Character sprite sheet/male_left_stand.png").convert_alpha(), #creates list of sprites
                      pygame.image.load("Assets/Character sprite sheet/male_1_left_walk.png").convert_alpha(), #list position 1
@@ -129,25 +195,69 @@ def main_game(): #all game stuff goes in here
 
 # ------------ MAIN GAME LOOP ---------------
     while game_running:
-        screen.blit(Sky,(0,0))
+
+#----------------- WEATHER START -------------
+        current_time = pygame.time.get_ticks() #gets current game tick
+        if current_time - last_weather_tick >= weather_duration: #if the time passed is equal to the random weather duration
+            last_weather_tick = current_time #resets timer
+            weather_duration = random.randint(180000,420000)  # creates the weather duration variable between 3 (180000)and 7 (420000) minutes
+            new_weather = random.choice(weather_list)
+            fog = False
+            rain = False
+            snow = False
+            while new_weather == current_weather: #checks if the weather has changed
+                new_weather = random.choice(weather_list) #if it hasn't, it reselects again
+            current_weather = new_weather #updates weather
+
+            if current_weather == "clear": #updating background
+                weather_bg = Sunny_Sky_Day
+                cloud1 = cloud_sunny_1
+                cloud2 = cloud_sunny_2
+                cloud3 = cloud_sunny_3
+            elif current_weather == "raining":
+                weather_bg = Rainy_Sky_Day
+                cloud1 = cloud_rainy_1
+                cloud2 = cloud_rainy_2
+                cloud3 = cloud_rainy_3
+                rain = True
+            elif current_weather == "snowing":
+                weather_bg = FogSnow_Sky_Day
+                snow = True
+            elif current_weather == "fog":
+                weather_bg = FogSnow_Sky_Day
+                fog = True
+
+        screen.blit(weather_bg,(0,0))
         screen.blit(Foreground,(0,0))
 
-# ------------ loading cloud sprites ----------------
-        screen.blit(cloud1,(cloud_1_x,cloud_1_y))  # displays cloud
-        cloud_1_x += 1  # moves cloud 1 pixel left
-        if cloud_1_x >= 1280:  # checks to see if cloud to far right off-screen
-            cloud_1_x = 0  # moves cloud back to the start
+        if current_weather == "clear" or current_weather == "raining":
+            screen.blit(cloud1,(cloud_1_x,cloud_1_y))  # displays cloud
+            cloud_1_x += 1  # moves cloud 1 pixel left
+            if cloud_1_x >= 1280:  # checks to see if cloud to far right off-screen
+                cloud_1_x = 0  # moves cloud back to the start
+        if current_weather == "clear" or current_weather == "raining":
+            screen.blit(cloud2,(cloud_2_x,cloud_2_y))
+            cloud_2_x += 0.4
+            if cloud_2_x >= 1280:
+                cloud_2_x = 0
+        if current_weather == "clear" or current_weather == "raining":
+            screen.blit(cloud3,(cloud_3_x,cloud_3_y))
+            cloud_3_x += 0.8
+            if cloud_3_x >= 1280:
+                cloud_3_x = 0
+        if fog == True:
+            screen.blit(fog_particle,(0,0))
+        if rain == True:
+            for drop in rain_drops: #for each active rain drop
+                drop.precipitate() #move it
+                drop.display() #display it
+        if snow == True:
+            for snow_drop in snow_drops:
+                snow_drop.snow_precipitate()
+                snow_drop.snow_display()
 
-        screen.blit(cloud2,(cloud_2_x,cloud_2_y))
-        cloud_2_x += 0.4
-        if cloud_2_x >= 1280:
-            cloud_2_x = 0
 
-        screen.blit(cloud3,(cloud_3_x,cloud_3_y))
-        cloud_3_x += 0.8
-        if cloud_3_x >= 1280:
-            cloud_3_x = 0
-#------------- loading cloud sprites end ------------
+#------------------ WEATHER END ---------------------
 
 #------------------ player movement -----------------
 
@@ -201,6 +311,7 @@ def main_game(): #all game stuff goes in here
 
         screen.blit(player_sprites[player_sprite_count], (player_x_coordinate, 265)) #put the player on screen and update the sprite
 #-------- player movement end -------------
+
         pygame.display.update()
         Clock.tick(FPS)
 
