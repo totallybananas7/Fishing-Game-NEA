@@ -193,6 +193,7 @@ def main_game(): #all game stuff goes in here
     player_x_coordinate = 100
     animation_timer = 0
     animation_speed = 9 #sets how quick the animations for the player will play
+    D = False
 
     background_musics= [pygame.mixer.Sound("Assets/Background stuff/Dave the Diver OST - On the boat.mp3"), #0 Day Clear
                         pygame.mixer.Sound("Assets/Background stuff/Star Wars - Kamino Theme.mp3"), #1 Day Rain
@@ -230,6 +231,10 @@ def main_game(): #all game stuff goes in here
     inventory_open = False #creates variable used later for checking if the inv is open
     inventory = pygame.image.load("Assets/Menus/inventory.png").convert_alpha() #loads inventory bg
     inventory_font = pygame.font.Font("PressStart2P-Regular.ttf", 20) #loads font for txt in inv
+
+    shop_bg = pygame.image.load("Assets/Shop/background_shop.png").convert_alpha()
+    npc_left = pygame.image.load("Assets/Shop/Corkah_left.png").convert_alpha()
+    npc_front = pygame.image.load("Assets/Shop/Corkah_front.png").convert_alpha()
 
 # MAIN GAME LOOP
     while game_running:
@@ -404,10 +409,17 @@ def main_game(): #all game stuff goes in here
                 animation_timer+=1
 
             player_x_coordinate+=player_speed
-            if player_x_coordinate >640:
+            if player_x_coordinate >640: #640 is end of pier
                 player_x_coordinate -=player_speed
             if player_sprite_count > 4:
                 player_sprite_count = 0
+
+            elif key[pygame.K_SPACE]:
+                if 170<=player_x_coordinate<=330:
+                    fadeout(fadespeed=1)
+                    #display space symbol
+                    #load shop bg and corkah
+                    #ive uploaded asset files future me <3
 
         else: #if the player is not moving...
             if 1<=player_sprite_count<=4:
