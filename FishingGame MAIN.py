@@ -4,7 +4,6 @@ from multiprocessing.connection import \
     default_family
 
 import pygame
-import time
 import random
 from sys import exit
 sys.setrecursionlimit(2000)
@@ -89,7 +88,7 @@ def fadeout(fadespeed=1): #defines fadeout function to have a smooth transition 
         fade.set_alpha(alpha) #alpha tells the game how opaque the black surface should be
         screen.blit(fade, (0, 0)) #draws the black overlay onto the screen
         pygame.display.update() #updates the game
-        pygame.time.delay(20) #waits 20ms before continuing to the next loop
+        pygame.time.delay(10) #waits 10ms before continuing to the next loop
 
 # Main game
 def main_game(): #all game stuff goes in here
@@ -188,6 +187,13 @@ def main_game(): #all game stuff goes in here
                      pygame.image.load("Assets/Character sprite sheet/male_3_right_walk.png").convert_alpha(), #8
                      pygame.image.load("Assets/Character sprite sheet/male_4_right_walk.png").convert_alpha()] #9
 
+    player_sprites_scaled = [] #creates new list for scaled sprites (bigger/smaller ones)
+    for sprite in player_sprites: #for each sprite in the player_sprites list
+        height = sprite.get_height() #get its height
+        width = sprite.get_width() #get its width
+        scaled_sprite = pygame.transform.scale(sprite, (width*1.8, height*1.8)) #scale it up by 1.8
+        player_sprites_scaled.append(scaled_sprite) #add it to the new scaled list
+
     player_sprite_count = 5  # creates value to iterate through the animation list above, with the player facing right once spawned
     player_speed = 5
     player_x_coordinate = 100
@@ -202,7 +208,8 @@ def main_game(): #all game stuff goes in here
                         pygame.mixer.Sound("Assets/Background stuff/Dave the Diver OST - Night Diving.mp3"), #4 Night Clear
                         pygame.mixer.Sound("Assets/Background stuff/Dave the Diver OST - The Blue Hole.mp3"), #5 Night Rain
                         pygame.mixer.Sound("Assets/Background stuff/Dave the Diver OST - Darker Trenches.mp3"), #6 Night Fog
-                        pygame.mixer.Sound("Assets/Background stuff/Dave the Diver OST - Ice Level (Preserved Realm).mp3")] #7 Night Snow
+                        pygame.mixer.Sound("Assets/Background stuff/Dave the Diver OST - Ice Level (Preserved Realm).mp3"), #7 Night Snow
+                        pygame.mixer.Sound("Assets/Shop/Shop music.mp3")] #8 shop music
 
     for music in background_musics:
         music.set_volume(0.05) #sets each bg musics volume to 50%
@@ -233,8 +240,12 @@ def main_game(): #all game stuff goes in here
     inventory_font = pygame.font.Font("PressStart2P-Regular.ttf", 20) #loads font for txt in inv
 
     shop_bg = pygame.image.load("Assets/Shop/background_shop.png").convert_alpha()
-    npc_left = pygame.image.load("Assets/Shop/Corkah_left.png").convert_alpha()
     npc_front = pygame.image.load("Assets/Shop/Corkah_front.png").convert_alpha()
+    npc_left = pygame.image.load("Assets/Shop/Corkah_left.png").convert_alpha()
+    space = pygame.image.load("Assets/Shop/space.png").convert_alpha()
+    shop_menu = pygame.image.load("Assets/Shop/shop interface.png").convert_alpha()
+    back_button = pygame.image.load("Assets/Shop/back_button.png").convert_alpha()
+    in_shop = False
 
 # MAIN GAME LOOP
     while game_running:
@@ -333,42 +344,56 @@ def main_game(): #all game stuff goes in here
                     Weather_font_colour = "azure"
 
 
-        screen.blit(weather_bg,(0,0))
-        screen.blit(Foreground,(0,0))
+        if in_shop == True:
+            screen.blit(shop_bg,(0,0))
+            screen.blit(npc_left,(900,385))
+        else:
+            screen.blit(weather_bg, (0, 0))
+            screen.blit(Foreground,(0,0))
 
-        if current_weather == "Clear" or current_weather == "Raining":
-            screen.blit(cloud1,(cloud_1_x,cloud_1_y))  # displays cloud
-            cloud_1_x += 1  # moves cloud 1 pixel left
-            if cloud_1_x >= 1280:  # checks to see if cloud to far right off-screen
-                cloud_1_x = 0  # moves cloud back to the start
-        if current_weather == "Clear" or current_weather == "Raining":
-            screen.blit(cloud2,(cloud_2_x,cloud_2_y))
-            cloud_2_x += 0.4
-            if cloud_2_x >= 1280:
-                cloud_2_x = 0
-        if current_weather == "Clear" or current_weather == "Raining":
-            screen.blit(cloud3,(cloud_3_x,cloud_3_y))
-            cloud_3_x += 0.8
-            if cloud_3_x >= 1280:
-                cloud_3_x = 0
-        if fog == True:
-            screen.blit(fog_particle,(0,0))
-        if rain == True:
-            for drop in rain_drops: #for each active rain drop
-                drop.precipitate() #move it
-                drop.display() #display it
-        if snow == True:
-            for snow_drop in snow_drops:
-                snow_drop.snow_precipitate()
-                snow_drop.snow_display()
+        if in_shop == False: #if the player is outside
+            if current_weather == "Clear" or current_weather == "Raining":
+                screen.blit(cloud1,(cloud_1_x,cloud_1_y))  # displays cloud
+                cloud_1_x += 1  # moves cloud 1 pixel left
+                if cloud_1_x >= 1280:  # checks to see if cloud to far right off-screen
+                    cloud_1_x = 0  # moves cloud back to the start
+            if current_weather == "Clear" or current_weather == "Raining":
+                screen.blit(cloud2,(cloud_2_x,cloud_2_y))
+                cloud_2_x += 0.4
+                if cloud_2_x >= 1280:
+                    cloud_2_x = 0
+            if current_weather == "Clear" or current_weather == "Raining":
+                screen.blit(cloud3,(cloud_3_x,cloud_3_y))
+                cloud_3_x += 0.8
+                if cloud_3_x >= 1280:
+                    cloud_3_x = 0
+            if fog == True:
+                screen.blit(fog_particle,(0,0))
+            if rain == True:
+                for drop in rain_drops: #for each active rain drop
+                    drop.precipitate() #move it
+                    drop.display() #display it
+            if snow == True:
+                for snow_drop in snow_drops:
+                    snow_drop.snow_precipitate()
+                    snow_drop.snow_display()
 
-        if new_background_music_index != current_background_music_index: #switch music only if it has changed
-            if current_background_music != None:
-                current_background_music = current_background_music.fadeout(3000) #fade out current bg music for 3s
+            if new_background_music_index != current_background_music_index: #switch music only if it has changed
+                if current_background_music != None:
+                    current_background_music = current_background_music.fadeout(3000) #fade out current bg music for 3s
 
-            current_background_music = background_musics[new_background_music_index] #selects music
-            current_background_music.play(-1) #play new music
-            current_background_music_index = new_background_music_index #updates tracker
+                current_background_music = background_musics[new_background_music_index] #selects music
+                current_background_music.play(-1) #play new music
+                current_background_music_index = new_background_music_index #updates tracker
+        else: #if in shop
+            if current_background_music_index != 8:
+                if current_background_music != None:
+                    current_background_music.fadeout(3000)
+
+                current_background_music = background_musics[8] #set music
+                current_background_music.play(-1) #play shop music
+                current_background_music_index = 8 #update tracker
+
 
 # Player movement and input
 
@@ -398,6 +423,9 @@ def main_game(): #all game stuff goes in here
                 player_x_coordinate += player_speed #stop player from going further
             if player_sprite_count > 9: #if sprite has done a full walk cycle...
                 player_sprite_count = 6 #set back to first step of cycle
+            elif 170 <= player_x_coordinate <= 260:
+                if in_shop == False:
+                    screen.blit(space,(105,290))
 
         elif key[pygame.K_d]:
             D = True
@@ -409,17 +437,32 @@ def main_game(): #all game stuff goes in here
                 animation_timer+=1
 
             player_x_coordinate+=player_speed
-            if player_x_coordinate >640: #640 is end of pier
-                player_x_coordinate -=player_speed
+            if in_shop == False:
+                if player_x_coordinate >640: #640 is end of pier
+                    player_x_coordinate -=player_speed
+            else:
+                if player_x_coordinate > 560: #560 is the edge of the store counter
+                    player_x_coordinate -= player_speed
             if player_sprite_count > 4:
                 player_sprite_count = 0
+            elif 170 <= player_x_coordinate <= 260:
+                if in_shop == False:
+                    screen.blit(space,(105,290))
 
-            elif key[pygame.K_SPACE]:
-                if 170<=player_x_coordinate<=330:
-                    fadeout(fadespeed=1)
-                    #display space symbol
-                    #load shop bg and corkah
-                    #ive uploaded asset files future me <3
+        elif key[pygame.K_SPACE]:
+            if 170 <= player_x_coordinate <= 260:
+                fadeout(fadespeed=1)
+                in_shop = True
+
+        elif 170 <= player_x_coordinate <= 260: #if near shop entrance
+            if in_shop == False:
+                screen.blit(space,(105,290))
+        elif 100 <= player_x_coordinate <= 300: #if near shop exit
+            if in_shop == True:
+                screen.blit(space,(105,290))
+        elif 460 <= player_x_coordinate <= 560: #if near shop NPC
+            if in_shop == True:
+                screen.blit(space,(105,290))
 
         else: #if the player is not moving...
             if 1<=player_sprite_count<=4:
@@ -427,7 +470,10 @@ def main_game(): #all game stuff goes in here
             elif 6<=player_sprite_count<=9:
                 player_sprite_count = 5
 
-        screen.blit(player_sprites[player_sprite_count], (player_x_coordinate, 265)) #put the player on screen and update the sprite
+        if in_shop == False:
+            screen.blit(player_sprites[player_sprite_count], (player_x_coordinate, 265)) #put the player on screen and update the sprite if outside
+        else:
+            screen.blit(player_sprites_scaled[player_sprite_count], (player_x_coordinate, 395))
 
 
 # Inventory/GUI
