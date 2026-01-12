@@ -200,6 +200,7 @@ def main_game(): #all game stuff goes in here
     animation_timer = 0
     animation_speed = 9 #sets how quick the animations for the player will play
     D = False
+    player_y_coordinate = 0
 
     background_musics= [pygame.mixer.Sound("Assets/Background stuff/Dave the Diver OST - On the boat.mp3"), #0 Day Clear
                         pygame.mixer.Sound("Assets/Background stuff/Star Wars - Kamino Theme.mp3"), #1 Day Rain
@@ -407,73 +408,88 @@ def main_game(): #all game stuff goes in here
 
         key = pygame.key.get_pressed() #records the keyboard/mouse for any inputs
 
-        if key[pygame.K_a]: #if a is pressed...
-            if D == True: #if the user last walked right and are now walking left...
-                player_sprite_count = 5 #set the animation loop to the 5th sprite
-                D = False #last walked right is now false
-            animation_timer+=1
-            if animation_timer>animation_speed:
-                player_sprite_count += 1 #update sprite by one
-                animation_timer = 0
-            else:
-                animation_timer+=1
+        show_space = False
+        moving = False
 
-            player_x_coordinate-=player_speed
-            if player_x_coordinate <-30: #if too far left...
-                player_x_coordinate += player_speed #stop player from going further
-            if player_sprite_count > 9: #if sprite has done a full walk cycle...
-                player_sprite_count = 6 #set back to first step of cycle
-            elif 170 <= player_x_coordinate <= 260:
-                if in_shop == False:
-                    screen.blit(space,(105,290))
+        if key[pygame.K_a]:
+            moving = True
+
+            if D == True: #if switching from right to left
+                player_sprite_count = 5 #update sprite count to left facing
+                D = False #no longer moving right
+
+            animation_timer +=1 #logic for updating sprite animation
+            if animation_timer > animation_speed:
+                player_sprite_count +=1
+                animation_timer = 0
+
+            player_x_coordinate -= player_speed #move player
+
+            if player_x_coordinate < -30: #if too far left
+                player_x_coordinate += player_speed #move player back
+
+            if player_sprite_count > 9: #if end of animation cycle
+                player_sprite_count = 6
 
         elif key[pygame.K_d]:
-            D = True
-            animation_timer+=1
-            if animation_timer>animation_speed:
+            moving = True
+            D = True #moving right
+
+            animation_timer += 1 #logic for updating sprite animation
+            if animation_timer > animation_speed:
                 player_sprite_count += 1
                 animation_timer = 0
-            else:
-                animation_timer+=1
 
-            player_x_coordinate+=player_speed
-            if in_shop == False:
-                if player_x_coordinate >640: #640 is end of pier
-                    player_x_coordinate -=player_speed
-            else:
-                if player_x_coordinate > 560: #560 is the edge of the store counter
-                    player_x_coordinate -= player_speed
-            if player_sprite_count > 4:
+            player_x_coordinate += player_speed #move player
+
+            if in_shop == False: #if outside
+                if player_x_coordinate>640: #if at end of pier
+                    player_x_coordinate -= player_speed #move player back
+            elif in_shop == True: #if inside
+                if player_x_coordinate > 560: #if at store counter
+                    player_x_coordinate -= player_speed #move player back
+
+            if player_sprite_count > 4: #if end of animation cycle
                 player_sprite_count = 0
-            elif 170 <= player_x_coordinate <= 260:
-                if in_shop == False:
-                    screen.blit(space,(105,290))
+
 
         elif key[pygame.K_SPACE]:
-            if 170 <= player_x_coordinate <= 260:
-                fadeout(fadespeed=1)
-                in_shop = True
-
-        elif 170 <= player_x_coordinate <= 260: #if near shop entrance
             if in_shop == False:
-                screen.blit(space,(105,290))
-        elif 100 <= player_x_coordinate <= 300: #if near shop exit
-            if in_shop == True:
-                screen.blit(space,(105,290))
-        elif 460 <= player_x_coordinate <= 560: #if near shop NPC
-            if in_shop == True:
-                screen.blit(space,(105,290))
+                if 170 <= player_x_coordinate <= 260: #if not in shop and near door
+                    fadeout(fadespeed=1) #fadeout
+                    in_shop = True
+            elif in_shop == True:
+                if 100 <= player_x_coordinate <= 300:
+                    fadeout(fadespeed=1)
+                    in_shop = False
+            elif in_shop == True:
+                if 500 <= player_x_coordinate <= 700:
+                    screen.blit(shop_menu,(160,90))
 
-        else: #if the player is not moving...
-            if 1<=player_sprite_count<=4:
-                player_sprite_count = 0
-            elif 6<=player_sprite_count<=9:
+        if moving == False: #if stationary
+            if 1<= player_sprite_count <= 4: #if last facing right
+                player_sprite_count = 0 #set to stationary right sprite
+            elif 6 <= player_sprite_count <= 9: #opposite to above
                 player_sprite_count = 5
 
         if in_shop == False:
-            screen.blit(player_sprites[player_sprite_count], (player_x_coordinate, 265)) #put the player on screen and update the sprite if outside
+            if 170 <= player_x_coordinate <= 260:
+                show_space = True #if outside and near door, show space indicator
+        elif in_shop == True:
+            if 100 <= player_x_coordinate <= 300:
+                show_space = True #if inside and near door, show space indicator
+        elif 500 <= player_x_coordinate <= 700:
+            show_space = True #if inside and near counter, show space indicator
+
+        if in_shop == False:
+            player_y_coordinate = 265
+            screen.blit(player_sprites[player_sprite_count],(player_x_coordinate,player_y_coordinate)) #displays sprite
         else:
-            screen.blit(player_sprites_scaled[player_sprite_count], (player_x_coordinate, 395))
+            player_y_coordinate = 395
+            screen.blit(player_sprites_scaled[player_sprite_count],(player_x_coordinate,player_y_coordinate)) #displays sprite but scaled up a bit and y changed
+
+        if show_space == True: #if near interactable area
+            screen.blit(space, (player_x_coordinate+120,player_y_coordinate)) #displays space indicator near player
 
 
 # Inventory/GUI
