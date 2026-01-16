@@ -246,7 +246,22 @@ def main_game(): #all game stuff goes in here
     space = pygame.image.load("Assets/Shop/space.png").convert_alpha()
     shop_menu = pygame.image.load("Assets/Shop/shop interface.png").convert_alpha()
     back_button = pygame.image.load("Assets/Shop/back_button.png").convert_alpha()
+    back_font = pygame.font.Font("PressStart2P-Regular.ttf",20)
     in_shop = False
+    in_shop_menu = False
+    dim_overlay = pygame.Surface((1280,720))  # creates a new screen the size of the window
+    dim_overlay.set_alpha(140)  # sets transparency of the new screen
+    dim_overlay.fill((0,0,0))  # sets the new screen to black
+
+    rods = [pygame.image.load("Assets/Rods/1.Starter_rod.png").convert_alpha(),
+            pygame.image.load("Assets/Rods/2.").convert_alpha(),
+            pygame.image.load("Assets/Rods/").convert_alpha(),
+            pygame.image.load("Assets/Rods/").convert_alpha(),
+            pygame.image.load("Assets/Rods/").convert_alpha(),
+            pygame.image.load("Assets/Rods/").convert_alpha(),
+            pygame.image.load("Assets/Rods/").convert_alpha(),
+            pygame.image.load("Assets/Rods/").convert_alpha(),
+            pygame.image.load("Assets/Rods/").convert_alpha()]
 
 # MAIN GAME LOOP
     while game_running:
@@ -462,9 +477,9 @@ def main_game(): #all game stuff goes in here
                 if 100 <= player_x_coordinate <= 300:
                     fadeout(fadespeed=1)
                     in_shop = False
-            elif in_shop == True:
-                if 500 <= player_x_coordinate <= 700:
-                    screen.blit(shop_menu,(160,90))
+                elif 500 <= player_x_coordinate <= 700:
+                    in_shop_menu = True
+
 
         if moving == False: #if stationary
             if 1<= player_sprite_count <= 4: #if last facing right
@@ -478,8 +493,9 @@ def main_game(): #all game stuff goes in here
         elif in_shop == True:
             if 100 <= player_x_coordinate <= 300:
                 show_space = True #if inside and near door, show space indicator
-        elif 500 <= player_x_coordinate <= 700:
-            show_space = True #if inside and near counter, show space indicator
+            elif 500 <= player_x_coordinate <= 700:
+                show_space = True #if inside and near counter, show space indicator
+
 
         if in_shop == False:
             player_y_coordinate = 265
@@ -498,9 +514,6 @@ def main_game(): #all game stuff goes in here
             inventory_open = True
 
         if inventory_open == True:
-            dim_overlay = pygame.Surface((1280, 720)) #creates a new screen the size of the window
-            dim_overlay.set_alpha(140) #sets transparency of the new screen
-            dim_overlay.fill((0, 0, 0)) #sets the new screen to black
             screen.blit(dim_overlay, (0, 0)) #puts the faded new screen to make the background darker to bring more contrast to inv
 
             #displays inv and text
@@ -517,6 +530,18 @@ def main_game(): #all game stuff goes in here
             if 1075<=x<=1110 and 100<=y<=130: #if near the X button
                 if event.type == pygame.MOUSEBUTTONDOWN: #if mouse clicked
                     inventory_open = False #inv is closed
+
+        elif in_shop_menu == True:
+            screen.blit(dim_overlay,(0,0))
+            screen.blit(shop_menu,(160,90))
+            screen.blit(back_button,(25,645))
+            screen.blit(back_font.render("Back",False,"red"), (30,656))
+            shop_mouse_pos = pygame.mouse.get_pos()
+            x, y = shop_mouse_pos
+            if 30<=x<=110 and 650<=y<=690:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    in_shop_menu = False
+
 
         else:
             ingame_clock = hour_display+":"+minute_display
