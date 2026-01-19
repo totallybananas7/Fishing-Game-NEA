@@ -223,7 +223,7 @@ def main_game(): #all game stuff goes in here
     board = pygame.image.load("Assets/Menus/board.png").convert_alpha()
     hotbar = pygame.image.load("Assets/Menus/hotbar.png").convert_alpha()
     Weight_font = pygame.font.Font("PressStart2P-Regular.ttf", 10)
-    Money_font = pygame.font.Font("PressStart2P-Regular.ttf", 10)
+    Money_font = pygame.font.Font("PressStart2P-Regular.ttf", 14)
     Clock_font = pygame.font.Font("PressStart2P-Regular.ttf", 30)
     Weather_font = pygame.font.Font("PressStart2P-Regular.ttf", 20)
     Weather_font_colour = "aqua"
@@ -245,23 +245,94 @@ def main_game(): #all game stuff goes in here
     npc_left = pygame.image.load("Assets/Shop/Corkah_left.png").convert_alpha()
     space = pygame.image.load("Assets/Shop/space.png").convert_alpha()
     shop_menu = pygame.image.load("Assets/Shop/shop interface.png").convert_alpha()
-    back_button = pygame.image.load("Assets/Shop/back_button.png").convert_alpha()
-    back_font = pygame.font.Font("PressStart2P-Regular.ttf",20)
+    back_sell_button = pygame.image.load("Assets/Shop/back_button.png").convert_alpha()
+    back_sell_font = pygame.font.Font("PressStart2P-Regular.ttf",20)
     in_shop = False
     in_shop_menu = False
     dim_overlay = pygame.Surface((1280,720))  # creates a new screen the size of the window
     dim_overlay.set_alpha(140)  # sets transparency of the new screen
     dim_overlay.fill((0,0,0))  # sets the new screen to black
+    shop_upgrade_font = pygame.font.Font("PressStart2P-Regular.ttf",25)
+    shop_bait_font = pygame.font.Font("PressStart2P-Regular.ttf",20)
+    weight_shop_sprite = pygame.image.load("Assets/Shop/weight_upgrade.png").convert_alpha()
+    can_buy = True #instantiates can buy variable for later in the shop, so you cant buy multiple rods every next frame
 
-    rods = [pygame.image.load("Assets/Rods/1.Starter_rod.png").convert_alpha(),
-            pygame.image.load("Assets/Rods/2.").convert_alpha(),
-            pygame.image.load("Assets/Rods/").convert_alpha(),
-            pygame.image.load("Assets/Rods/").convert_alpha(),
-            pygame.image.load("Assets/Rods/").convert_alpha(),
-            pygame.image.load("Assets/Rods/").convert_alpha(),
-            pygame.image.load("Assets/Rods/").convert_alpha(),
-            pygame.image.load("Assets/Rods/").convert_alpha(),
-            pygame.image.load("Assets/Rods/").convert_alpha()]
+    class Rod:
+        def __init__(self, name, sprite, fishing_speed, luck, cost, upgrade_index): #creates parent class for rods with stats (constructor)
+            self.name = name
+            self.sprite = sprite
+            self.fishing_speed = fishing_speed
+            self.luck = luck
+            self.cost = cost
+            self.upgrade_index = upgrade_index
+
+    class Bait:
+        def __init__(self, name, sprite, luck, cost): #creates parent class for bait
+            self.name = name
+            self.sprite = sprite
+            self.luck = luck
+            self.cost = cost
+
+    Starter_rod = Rod("Starter rod", pygame.image.load("Assets/Rods/1.Starter_rod.png").convert_alpha(), 1, 1, 0, None) #creates fishing rod with its sprite and stats
+    Hobbyist_rod = Rod("Hobbyist rod", pygame.image.load("Assets/Rods/2.Hobbyist_rod.png").convert_alpha(), 2, 2, 100, 0)
+    Commercial_rod = Rod("Commercial rod", pygame.image.load("Assets/Rods/3.Commercial_rod.png").convert_alpha(), 3, 3, 200, 1)
+    Sturdy_rod = Rod("Sturdy rod", pygame.image.load("Assets/Rods/4.Sturdy_rod.png").convert_alpha(), 4, 4, 350, 2)
+    Rod_of_the_sea = Rod("Rod of the sea", pygame.image.load("Assets/Rods/5.Rod_of_the_sea.png").convert_alpha(), 5, 5, 600, 3)
+    Rod_of_the_ocean = Rod(" Rod of the ocean", pygame.image.load("Assets/Rods/6.Rod_of_the_ocean.png").convert_alpha(), 7, 7, 1000, 4)
+    Amethyst_rod = Rod("Amethyst rod", pygame.image.load("Assets/Rods/7.Amethyst_rod.png").convert_alpha(), 10, 10, 1500, 5)
+    Australium_rod = Rod("Australium rod", pygame.image.load("Assets/Rods/8.Australium_rod.png").convert_alpha(), 14, 14, 2200, 6)
+    Lightsaber_rod = Rod("Lightsaber rod", pygame.image.load("Assets/Rods/9.Lightsaber_rod.png").convert_alpha(), 20, 20, 3000, 7)
+    Hellfire_rod = Rod("Hellfire rod", pygame.image.load("Assets/Rods/10.Hellfire_rod.png").convert_alpha(), 25, 25, 4000, 8)
+    God_rod = Rod("God rod", pygame.image.load("Assets/Rods/11.God_rod.png").convert_alpha(), 29, 29, 6000, 9)
+
+    shop_upgrade_path = [Hobbyist_rod,Commercial_rod,Sturdy_rod,Rod_of_the_sea,Rod_of_the_ocean,Amethyst_rod,Australium_rod,Lightsaber_rod,Hellfire_rod,God_rod] #so the shop displays the next rod the player can buy, excludes starter rod
+
+    No_bait = Bait("No bait",pygame.image.load("Assets/Rods/out_of_bait.png").convert_alpha(), 0, 0) #all baits
+    Worm_bait = Bait("Worm bait",pygame.image.load("Assets/Rods/worm_bait.png").convert_alpha(), 3, 100)
+    Glow_bait = Bait("Glow bait",pygame.image.load("Assets/Rods/glow_bait.png").convert_alpha(), 6, 200)
+    Chum_bait = Bait("Chum bait",pygame.image.load("Assets/Rods/chum_bait.png").convert_alpha(), 9, 400)
+    Rainbow_bait = Bait("Rainbow bait",pygame.image.load("Assets/Rods/rainbow_bait.png").convert_alpha(), 14, 900)
+
+    class Player:
+        def __init__(self,money,weight,held_rod,held_bait,bait_amount,max_weight,weight_upgrade_cost): #makes player class with stats
+            self.money = money
+            self.weight = weight
+            self.held_rod = held_rod
+            self.held_bait = held_bait
+            self.bait_amount = bait_amount
+            self.max_weight = max_weight
+            self.weight_upgrade_cost = weight_upgrade_cost
+
+        def get_fishing_speed(player):
+            return player.held_rod.fishing_speed #returns the players fishing speed
+        def get_fishing_luck(player):
+            return player.held_rod.luck + player.held_bait.luck #returns players total luck stat
+
+    player = Player(20000,0,Starter_rod,No_bait,0,50,100) #creates player class with starter gear and stats
+
+    def shop_next_rod(player):
+        if player.held_rod.upgrade_index == None: #if the player has the starter rod
+            return shop_upgrade_path[0] #next rod to purchase is Hobbyist Rod
+        next_rod = player.held_rod.upgrade_index+1 #work out index of next rod to buy
+        if next_rod < len(shop_upgrade_path): #prevents index going past length of shop list
+            return shop_upgrade_path[next_rod] #returns next rod upgrade
+        return None #gives nothing if player has final rod
+
+    def buy_next_rod(player):
+        next_rod = shop_next_rod(player) #find next rod the player can buy
+        if next_rod and player.money >= next_rod.cost: #if rod exists and the player can afford it
+            player.money -= next_rod.cost #take away money from player according to the rods cost
+            player.held_rod = next_rod #give player new rod
+
+    def buy_next_weight(player):
+        if player.money>=player.weight_upgrade_cost: #if player has enough money
+            player.money-=player.weight_upgrade_cost #take away money
+            player.weight_upgrade_cost+=100 #buff price by 100
+            player.max_weight+=10 #give player +10 max weight
+
+
+
+
 
 # MAIN GAME LOOP
     while game_running:
@@ -360,11 +431,11 @@ def main_game(): #all game stuff goes in here
                     Weather_font_colour = "azure"
 
 
-        if in_shop == True:
-            screen.blit(shop_bg,(0,0))
-            screen.blit(npc_left,(900,385))
+        if in_shop == True: #if in shop
+            screen.blit(shop_bg,(0,0)) #display shpp bg
+            screen.blit(npc_left,(900,385)) #display npc
         else:
-            screen.blit(weather_bg, (0, 0))
+            screen.blit(weather_bg, (0, 0)) #if outside, show outside stuff
             screen.blit(Foreground,(0,0))
 
         if in_shop == False: #if the player is outside
@@ -505,7 +576,10 @@ def main_game(): #all game stuff goes in here
             screen.blit(player_sprites_scaled[player_sprite_count],(player_x_coordinate,player_y_coordinate)) #displays sprite but scaled up a bit and y changed
 
         if show_space == True: #if near interactable area
-            screen.blit(space, (player_x_coordinate+120,player_y_coordinate)) #displays space indicator near player
+            if in_shop == False:
+                screen.blit(space, (player_x_coordinate+100,player_y_coordinate)) #displays space indicator near player
+            else:
+                screen.blit(space,(player_x_coordinate + 200, player_y_coordinate))  # displays space indicator near player
 
 
 # Inventory/GUI
@@ -534,13 +608,58 @@ def main_game(): #all game stuff goes in here
         elif in_shop_menu == True:
             screen.blit(dim_overlay,(0,0))
             screen.blit(shop_menu,(160,90))
-            screen.blit(back_button,(25,645))
-            screen.blit(back_font.render("Back",False,"red"), (30,656))
+            screen.blit(back_sell_button,(25,645))
+            screen.blit(back_sell_button,(1160,645))
+            screen.blit(back_sell_font.render("Back",False,"red"), (30,656))
+            screen.blit(back_sell_font.render("Sell",False,"green"), (1165,656))
+
+            next_rod = shop_next_rod(player)
+
             shop_mouse_pos = pygame.mouse.get_pos()
             x, y = shop_mouse_pos
-            if 30<=x<=110 and 650<=y<=690:
+
+            if next_rod != None:
+                screen.blit(next_rod.sprite, (200,150))
+                screen.blit(shop_upgrade_font.render(next_rod.name, False, "Black"),(270,155))
+                screen.blit(shop_upgrade_font.render(f"Cost: {next_rod.cost}",False, "Black"), (700,155))
+
+            screen.blit(Worm_bait.sprite, (185,410)) #displays all bait sprites, names and costs
+            screen.blit(shop_bait_font.render(Worm_bait.name, False, "Black"), (240,400))
+            screen.blit(shop_bait_font.render(f"Cost: {Worm_bait.cost}",False, "Black"), (240,430))
+
+            screen.blit(Glow_bait.sprite, (670,410))
+            screen.blit(shop_bait_font.render(Glow_bait.name, False, "Black"), (725, 400))
+            screen.blit(shop_bait_font.render(f"Cost: {Glow_bait.cost}", False, "Black"), (725, 430))
+
+            screen.blit(Chum_bait.sprite, (190,550))
+            screen.blit(shop_bait_font.render(Chum_bait.name, False, "Black"), (245,540))
+            screen.blit(shop_bait_font.render(f"Cost: {Chum_bait.cost}", False, "Black"), (245,570))
+
+            screen.blit(Rainbow_bait.sprite, (670,550))
+            screen.blit(shop_bait_font.render(Rainbow_bait.name, False, "Black"), (725,540))
+            screen.blit(shop_bait_font.render(f"Cost: {Rainbow_bait.cost}", False, "Black"), (725,570))
+
+            screen.blit(weight_shop_sprite, (200,275))
+            screen.blit(shop_upgrade_font.render("Max weight +10kg", False, "Black"), (270,280))
+            screen.blit(shop_upgrade_font.render(f"Cost: {player.weight_upgrade_cost}", False, "Black"), (700,280))
+
+
+
+            if 30<=x<=110 and 650<=y<=690: #if press close button
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    in_shop_menu = False
+                    in_shop_menu = False #leave shop GUI
+            if 990<=x<=1100 and 130<=y<=190: #if press buy new rod button
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if can_buy == True:
+                        buy_next_rod(player)
+                        can_buy = False #stops player buying multiple rods each frame
+            if 990<=x<=110 and 265<=y<=320: #if press buy max weight
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if can_buy == True:
+                        buy_next_weight(player)
+                        can_buy = False
+            if event.type == pygame.MOUSEBUTTONUP:
+                can_buy = True
 
 
         else:
@@ -558,11 +677,11 @@ def main_game(): #all game stuff goes in here
             screen.blit(board,(1080,145)) #third top right (fishdex)
             screen.blit(Fishdex_font.render("Fishdex placeholder", False, "yellow"),(1092,170))
 
-            screen.blit(board,(10,5)) #top left (money)
-            screen.blit(Money_font.render("Money placeholder", False, "yellow"), (20, 32))
+        screen.blit(board,(10,5)) #top left (money)
+        screen.blit(Money_font.render(f"Money: £{player.money}", False, "yellow"), (20, 32))
 
         screen.blit(hotbar,(576,650)) #bottom middle (hotbar)
-
+        screen.blit(player.held_rod.sprite, (590,665))
         pygame.display.update()
         Clock.tick(FPS)
 
