@@ -222,7 +222,7 @@ def main_game(): #all game stuff goes in here
     #creating fonts for the inv and loading images
     board = pygame.image.load("Assets/Menus/board.png").convert_alpha()
     hotbar = pygame.image.load("Assets/Menus/hotbar.png").convert_alpha()
-    Weight_font = pygame.font.Font("PressStart2P-Regular.ttf", 10)
+    Weight_font = pygame.font.Font("PressStart2P-Regular.ttf", 11)
     Money_font = pygame.font.Font("PressStart2P-Regular.ttf", 14)
     Clock_font = pygame.font.Font("PressStart2P-Regular.ttf", 30)
     Weather_font = pygame.font.Font("PressStart2P-Regular.ttf", 20)
@@ -256,6 +256,7 @@ def main_game(): #all game stuff goes in here
     shop_bait_font = pygame.font.Font("PressStart2P-Regular.ttf",20)
     weight_shop_sprite = pygame.image.load("Assets/Shop/weight_upgrade.png").convert_alpha()
     can_buy = True #instantiates can buy variable for later in the shop, so you cant buy multiple rods every next frame
+    inv_bait_amount_font = pygame.font.Font("PressStart2P-Regular.ttf",10)
 
     class Rod:
         def __init__(self, name, sprite, fishing_speed, luck, cost, upgrade_index): #creates parent class for rods with stats (constructor)
@@ -330,8 +331,15 @@ def main_game(): #all game stuff goes in here
             player.weight_upgrade_cost+=100 #buff price by 100
             player.max_weight+=10 #give player +10 max weight
 
-
-
+    def buy_bait(player, bait):
+        if player.money<bait.cost: #if player cannot afford
+            return #do nothing
+        player.money-=bait.cost #take away cost
+        if player.held_bait == bait: #if the player has the same bait they are buying
+            player.bait_amount+=32 #add 32 more bait
+        else:
+            player.held_bait = bait
+            player.bait_amount = 32
 
 
 # MAIN GAME LOOP
@@ -653,11 +661,33 @@ def main_game(): #all game stuff goes in here
                     if can_buy == True:
                         buy_next_rod(player)
                         can_buy = False #stops player buying multiple rods each frame
-            if 990<=x<=110 and 265<=y<=320: #if press buy max weight
+            if 990<=x<=1110 and 265<=y<=320: #if press buy max weight
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if can_buy == True:
                         buy_next_weight(player)
                         can_buy = False
+            if 515<=x<=625 and 400<=y<=455: #if buy worm bait
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if can_buy == True:
+                        buy_bait(player,Worm_bait)
+                        can_buy = False
+            if 990<=x<=1100 and 400<=y<=455: #if buy glow bait
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if can_buy == True:
+                        buy_bait(player, Glow_bait)
+                        can_buy = False
+            if 515<=x<=625 and 535<=y<=590: #if buy chum bait
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if can_buy == True:
+                        buy_bait(player, Chum_bait)
+                        can_buy = False
+            if 990<=x<=1100 and 535<=y<=590: #if buy rainbow bait
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if can_buy == True:
+                        buy_bait(player, Rainbow_bait)
+                        can_buy = False
+
+
             if event.type == pygame.MOUSEBUTTONUP:
                 can_buy = True
 
@@ -666,7 +696,7 @@ def main_game(): #all game stuff goes in here
             ingame_clock = hour_display+":"+minute_display
 
             screen.blit(board,(1080,650)) #bottom right (weight)
-            screen.blit(Weight_font.render("Weight placeholder", False, "yellow"), (1087, 677))
+            screen.blit(Weight_font.render(f"Weight: {player.weight}kg/{player.max_weight}kg", False, "yellow"), (1087, 677))
 
             screen.blit(board,(1080,5)) #top right (time)
             screen.blit(Clock_font.render(ingame_clock, False, "yellow"),(1100,25))
@@ -682,6 +712,9 @@ def main_game(): #all game stuff goes in here
 
         screen.blit(hotbar,(576,650)) #bottom middle (hotbar)
         screen.blit(player.held_rod.sprite, (590,665))
+        screen.blit(player.held_bait.sprite, (650, 665))
+        screen.blit(inv_bait_amount_font.render(f"{player.bait_amount}", False, "white"), (676,663))
+
         pygame.display.update()
         Clock.tick(FPS)
 
