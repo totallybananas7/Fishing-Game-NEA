@@ -247,8 +247,8 @@ def main_game(): #all game stuff goes in here
     shop_menu = pygame.image.load("Assets/Shop/shop interface.png").convert_alpha()
     back_sell_button = pygame.image.load("Assets/Shop/back_button.png").convert_alpha()
     back_sell_font = pygame.font.Font("PressStart2P-Regular.ttf",20)
-    in_shop = False
-    in_shop_menu = False
+    in_shop = False #instantiate variable for checking if in shop
+    in_shop_menu = False #instantiate variable for checking if in shop menu
     dim_overlay = pygame.Surface((1280,720))  # creates a new screen the size of the window
     dim_overlay.set_alpha(140)  # sets transparency of the new screen
     dim_overlay.fill((0,0,0))  # sets the new screen to black
@@ -258,7 +258,7 @@ def main_game(): #all game stuff goes in here
     can_buy = True #instantiates can buy variable for later in the shop, so you cant buy multiple rods every next frame
     inv_bait_amount_font = pygame.font.Font("PressStart2P-Regular.ttf",10)
 
-    class Rod:
+    class Rod: #create rod class
         def __init__(self, name, sprite, fishing_speed, luck, cost, upgrade_index): #creates parent class for rods with stats (constructor)
             self.name = name
             self.sprite = sprite
@@ -338,8 +338,8 @@ def main_game(): #all game stuff goes in here
         if player.held_bait == bait: #if the player has the same bait they are buying
             player.bait_amount+=32 #add 32 more bait
         else:
-            player.held_bait = bait
-            player.bait_amount = 32
+            player.held_bait = bait #change old bait to new bait
+            player.bait_amount = 32 #set bait amount to 32
 
 
 # MAIN GAME LOOP
@@ -502,20 +502,20 @@ def main_game(): #all game stuff goes in here
 
         key = pygame.key.get_pressed() #records the keyboard/mouse for any inputs
 
-        show_space = False
-        moving = False
+        show_space = False #instantiate variable for displaying interact indicator
+        moving = False #checks if moving
 
-        if key[pygame.K_a]:
-            moving = True
+        if key[pygame.K_a]: #if pressing a
+            moving = True #player is moving
 
             if D == True: #if switching from right to left
                 player_sprite_count = 5 #update sprite count to left facing
                 D = False #no longer moving right
 
             animation_timer +=1 #logic for updating sprite animation
-            if animation_timer > animation_speed:
-                player_sprite_count +=1
-                animation_timer = 0
+            if animation_timer > animation_speed: #if enough frames have passed to warran a change in sprite
+                player_sprite_count +=1 #update sprite
+                animation_timer = 0 #reset frame timer
 
             player_x_coordinate -= player_speed #move player
 
@@ -523,7 +523,7 @@ def main_game(): #all game stuff goes in here
                 player_x_coordinate += player_speed #move player back
 
             if player_sprite_count > 9: #if end of animation cycle
-                player_sprite_count = 6
+                player_sprite_count = 6 #set sprite back
 
         elif key[pygame.K_d]:
             moving = True
@@ -550,14 +550,14 @@ def main_game(): #all game stuff goes in here
         elif key[pygame.K_SPACE]:
             if in_shop == False:
                 if 170 <= player_x_coordinate <= 260: #if not in shop and near door
-                    fadeout(fadespeed=1) #fadeout
-                    in_shop = True
+                    fadeout(fadespeed=1) #fadeout animation
+                    in_shop = True #activates code for in shop
             elif in_shop == True:
-                if 100 <= player_x_coordinate <= 300:
+                if 100 <= player_x_coordinate <= 300: #if in shop and near door
                     fadeout(fadespeed=1)
-                    in_shop = False
+                    in_shop = False #exits shop
                 elif 500 <= player_x_coordinate <= 700:
-                    in_shop_menu = True
+                    in_shop_menu = True #activates menu
 
 
         if moving == False: #if stationary
@@ -614,39 +614,35 @@ def main_game(): #all game stuff goes in here
                     inventory_open = False #inv is closed
 
         elif in_shop_menu == True:
-            screen.blit(dim_overlay,(0,0))
+            screen.blit(dim_overlay,(0,0)) #displays gui stuff
             screen.blit(shop_menu,(160,90))
             screen.blit(back_sell_button,(25,645))
             screen.blit(back_sell_button,(1160,645))
             screen.blit(back_sell_font.render("Back",False,"red"), (30,656))
             screen.blit(back_sell_font.render("Sell",False,"green"), (1165,656))
 
-            next_rod = shop_next_rod(player)
+            next_rod = shop_next_rod(player) #figures out which rod is the next to be bought with the subroutines outside the while loop
 
-            shop_mouse_pos = pygame.mouse.get_pos()
+            shop_mouse_pos = pygame.mouse.get_pos() #get mouse pos
             x, y = shop_mouse_pos
 
-            if next_rod != None:
-                screen.blit(next_rod.sprite, (200,150))
+            if next_rod != None: #if they can get a new rod
+                screen.blit(next_rod.sprite, (200,150)) #show next rod's sprite, name and cost
                 screen.blit(shop_upgrade_font.render(next_rod.name, False, "Black"),(270,155))
                 screen.blit(shop_upgrade_font.render(f"Cost: {next_rod.cost}",False, "Black"), (700,155))
 
             screen.blit(Worm_bait.sprite, (185,410)) #displays all bait sprites, names and costs
             screen.blit(shop_bait_font.render(Worm_bait.name, False, "Black"), (240,400))
             screen.blit(shop_bait_font.render(f"Cost: {Worm_bait.cost}",False, "Black"), (240,430))
-
             screen.blit(Glow_bait.sprite, (670,410))
             screen.blit(shop_bait_font.render(Glow_bait.name, False, "Black"), (725, 400))
             screen.blit(shop_bait_font.render(f"Cost: {Glow_bait.cost}", False, "Black"), (725, 430))
-
             screen.blit(Chum_bait.sprite, (190,550))
             screen.blit(shop_bait_font.render(Chum_bait.name, False, "Black"), (245,540))
             screen.blit(shop_bait_font.render(f"Cost: {Chum_bait.cost}", False, "Black"), (245,570))
-
             screen.blit(Rainbow_bait.sprite, (670,550))
             screen.blit(shop_bait_font.render(Rainbow_bait.name, False, "Black"), (725,540))
             screen.blit(shop_bait_font.render(f"Cost: {Rainbow_bait.cost}", False, "Black"), (725,570))
-
             screen.blit(weight_shop_sprite, (200,275))
             screen.blit(shop_upgrade_font.render("Max weight +10kg", False, "Black"), (270,280))
             screen.blit(shop_upgrade_font.render(f"Cost: {player.weight_upgrade_cost}", False, "Black"), (700,280))
@@ -688,8 +684,8 @@ def main_game(): #all game stuff goes in here
                         can_buy = False
 
 
-            if event.type == pygame.MOUSEBUTTONUP:
-                can_buy = True
+            if event.type == pygame.MOUSEBUTTONUP: #if player lets go of mouse
+                can_buy = True #player can buy something again
 
 
         else:
@@ -707,9 +703,9 @@ def main_game(): #all game stuff goes in here
             screen.blit(board,(1080,145)) #third top right (fishdex)
             screen.blit(Fishdex_font.render("Fishdex placeholder", False, "yellow"),(1092,170))
 
+        #these are out of the loop so they are always displayed, even if in shop/inv GUI
         screen.blit(board,(10,5)) #top left (money)
         screen.blit(Money_font.render(f"Money: £{player.money}", False, "yellow"), (20, 32))
-
         screen.blit(hotbar,(576,650)) #bottom middle (hotbar)
         screen.blit(player.held_rod.sprite, (590,665))
         screen.blit(player.held_bait.sprite, (650, 665))
