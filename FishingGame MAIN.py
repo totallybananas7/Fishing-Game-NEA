@@ -242,7 +242,6 @@ def main_game(): #all game stuff goes in here
     inventory_font = pygame.font.Font("PressStart2P-Regular.ttf", 20) #loads font for txt in inv
 
     shop_bg = pygame.image.load("Assets/Shop/background_shop.png").convert_alpha()
-    npc_front = pygame.image.load("Assets/Shop/Corkah_front.png").convert_alpha()
     npc_left = pygame.image.load("Assets/Shop/Corkah_left.png").convert_alpha()
     space = pygame.image.load("Assets/Shop/space.png").convert_alpha()
     shop_menu = pygame.image.load("Assets/Shop/shop interface.png").convert_alpha()
