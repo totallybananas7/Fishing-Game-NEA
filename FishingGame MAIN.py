@@ -185,7 +185,8 @@ def main_game(): #all game stuff goes in here
                      pygame.image.load("Assets/Character sprite sheet/male_1_right_walk.png").convert_alpha(), #6
                      pygame.image.load("Assets/Character sprite sheet/male_2_right_walk.png").convert_alpha(), #7
                      pygame.image.load("Assets/Character sprite sheet/male_3_right_walk.png").convert_alpha(), #8
-                     pygame.image.load("Assets/Character sprite sheet/male_4_right_walk.png").convert_alpha()] #9
+                     pygame.image.load("Assets/Character sprite sheet/male_4_right_walk.png").convert_alpha(), #9
+                     pygame.image.load("Assets/Character sprite sheet/male_holding_rod.png").convert_alpha()] #10
 
     player_sprites_scaled = [] #creates new list for scaled sprites (bigger/smaller ones)
     for sprite in player_sprites: #for each sprite in the player_sprites list
@@ -342,6 +343,11 @@ def main_game(): #all game stuff goes in here
             player.bait_amount = 32 #set bait amount to 32
 
 
+    alert_indicator = pygame.image.load("Assets/Fishing minigame/alert_indicator.png").convert_alpha()
+    fishing_minigame_bar = pygame.image.load("Assets/Fishing minigame/fishing_minigame_bar.png").convert_alpha()
+    fishing_minigame_fish = pygame.image.load("Assets/Fishing minigame/fishing_minigame_fish.png").convert_alpha()
+
+
 # MAIN GAME LOOP
     while game_running:
 
@@ -440,7 +446,7 @@ def main_game(): #all game stuff goes in here
 
 
         if in_shop == True: #if in shop
-            screen.blit(shop_bg,(0,0)) #display shpp bg
+            screen.blit(shop_bg,(0,0)) #display shop bg
             screen.blit(npc_left,(900,385)) #display npc
         else:
             screen.blit(weather_bg, (0, 0)) #if outside, show outside stuff
@@ -504,6 +510,7 @@ def main_game(): #all game stuff goes in here
 
         show_space = False #instantiate variable for displaying interact indicator
         moving = False #checks if moving
+        cast = False #instantiate variable for checking if the player has their rod cast
 
         if key[pygame.K_a]: #if pressing a
             moving = True #player is moving
@@ -513,7 +520,7 @@ def main_game(): #all game stuff goes in here
                 D = False #no longer moving right
 
             animation_timer +=1 #logic for updating sprite animation
-            if animation_timer > animation_speed: #if enough frames have passed to warran a change in sprite
+            if animation_timer > animation_speed: #if enough frames have passed to warrant a change in sprite
                 player_sprite_count +=1 #update sprite
                 animation_timer = 0 #reset frame timer
 
@@ -552,6 +559,9 @@ def main_game(): #all game stuff goes in here
                 if 170 <= player_x_coordinate <= 260: #if not in shop and near door
                     fadeout(fadespeed=1) #fadeout animation
                     in_shop = True #activates code for in shop
+                elif player_x_coordinate >= 550:  # if player is near the end of the pier
+                    cast = True
+
             elif in_shop == True:
                 if 100 <= player_x_coordinate <= 300: #if in shop and near door
                     fadeout(fadespeed=1)
@@ -569,6 +579,8 @@ def main_game(): #all game stuff goes in here
         if in_shop == False:
             if 170 <= player_x_coordinate <= 260:
                 show_space = True #if outside and near door, show space indicator
+            elif player_x_coordinate >= 550:  # if player is near the end of the pier
+                show_space = True
         elif in_shop == True:
             if 100 <= player_x_coordinate <= 300:
                 show_space = True #if inside and near door, show space indicator
@@ -578,7 +590,10 @@ def main_game(): #all game stuff goes in here
 
         if in_shop == False:
             player_y_coordinate = 265
-            screen.blit(player_sprites[player_sprite_count],(player_x_coordinate,player_y_coordinate)) #displays sprite
+            if cast == False:
+                screen.blit(player_sprites[player_sprite_count],(player_x_coordinate,player_y_coordinate)) #displays sprite
+            else:
+                screen.blit(player_sprites[10], (player_x_coordinate, player_y_coordinate)) #displays sprite with hand held out
         else:
             player_y_coordinate = 395
             screen.blit(player_sprites_scaled[player_sprite_count],(player_x_coordinate,player_y_coordinate)) #displays sprite but scaled up a bit and y changed
@@ -647,38 +662,30 @@ def main_game(): #all game stuff goes in here
             screen.blit(shop_upgrade_font.render("Max weight +10kg", False, "Black"), (270,280))
             screen.blit(shop_upgrade_font.render(f"Cost: {player.weight_upgrade_cost}", False, "Black"), (700,280))
 
-
-
-            if 30<=x<=110 and 650<=y<=690: #if press close button
-                if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if 30<=x<=110 and 650<=y<=690: #if press close button
                     in_shop_menu = False #leave shop GUI
-            if 990<=x<=1100 and 130<=y<=190: #if press buy new rod button
-                if event.type == pygame.MOUSEBUTTONDOWN:
+                if 990<=x<=1100 and 130<=y<=190: #if press buy new rod button
                     if can_buy == True:
                         buy_next_rod(player)
                         can_buy = False #stops player buying multiple rods each frame
-            if 990<=x<=1110 and 265<=y<=320: #if press buy max weight
-                if event.type == pygame.MOUSEBUTTONDOWN:
+                if 990<=x<=1110 and 265<=y<=320: #if press buy max weight
                     if can_buy == True:
                         buy_next_weight(player)
                         can_buy = False
-            if 515<=x<=625 and 400<=y<=455: #if buy worm bait
-                if event.type == pygame.MOUSEBUTTONDOWN:
+                if 515<=x<=625 and 400<=y<=455: #if buy worm bait
                     if can_buy == True:
                         buy_bait(player,Worm_bait)
                         can_buy = False
-            if 990<=x<=1100 and 400<=y<=455: #if buy glow bait
-                if event.type == pygame.MOUSEBUTTONDOWN:
+                if 990<=x<=1100 and 400<=y<=455: #if buy glow bait
                     if can_buy == True:
                         buy_bait(player, Glow_bait)
                         can_buy = False
-            if 515<=x<=625 and 535<=y<=590: #if buy chum bait
-                if event.type == pygame.MOUSEBUTTONDOWN:
+                if 515<=x<=625 and 535<=y<=590: #if buy chum bait
                     if can_buy == True:
                         buy_bait(player, Chum_bait)
                         can_buy = False
-            if 990<=x<=1100 and 535<=y<=590: #if buy rainbow bait
-                if event.type == pygame.MOUSEBUTTONDOWN:
+                if 990<=x<=1100 and 535<=y<=590: #if buy rainbow bait
                     if can_buy == True:
                         buy_bait(player, Rainbow_bait)
                         can_buy = False
