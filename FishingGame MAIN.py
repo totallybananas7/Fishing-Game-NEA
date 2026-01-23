@@ -274,17 +274,17 @@ def main_game(): #all game stuff goes in here
             self.luck = luck
             self.cost = cost
 
-    Starter_rod = Rod("Starter rod", pygame.image.load("Assets/Rods/1.Starter_rod.png").convert_alpha(), 1, 1, 0, None) #creates fishing rod with its sprite and stats
-    Hobbyist_rod = Rod("Hobbyist rod", pygame.image.load("Assets/Rods/2.Hobbyist_rod.png").convert_alpha(), 2, 2, 100, 0)
-    Commercial_rod = Rod("Commercial rod", pygame.image.load("Assets/Rods/3.Commercial_rod.png").convert_alpha(), 3, 3, 200, 1)
-    Sturdy_rod = Rod("Sturdy rod", pygame.image.load("Assets/Rods/4.Sturdy_rod.png").convert_alpha(), 4, 4, 350, 2)
-    Rod_of_the_sea = Rod("Rod of the sea", pygame.image.load("Assets/Rods/5.Rod_of_the_sea.png").convert_alpha(), 5, 5, 600, 3)
-    Rod_of_the_ocean = Rod(" Rod of the ocean", pygame.image.load("Assets/Rods/6.Rod_of_the_ocean.png").convert_alpha(), 7, 7, 1000, 4)
-    Amethyst_rod = Rod("Amethyst rod", pygame.image.load("Assets/Rods/7.Amethyst_rod.png").convert_alpha(), 10, 10, 1500, 5)
-    Australium_rod = Rod("Australium rod", pygame.image.load("Assets/Rods/8.Australium_rod.png").convert_alpha(), 14, 14, 2200, 6)
-    Lightsaber_rod = Rod("Lightsaber rod", pygame.image.load("Assets/Rods/9.Lightsaber_rod.png").convert_alpha(), 20, 20, 3000, 7)
-    Hellfire_rod = Rod("Hellfire rod", pygame.image.load("Assets/Rods/10.Hellfire_rod.png").convert_alpha(), 25, 25, 4000, 8)
-    God_rod = Rod("God rod", pygame.image.load("Assets/Rods/11.God_rod.png").convert_alpha(), 29, 29, 6000, 9)
+    Starter_rod = Rod("Starter rod", pygame.image.load("Assets/Rods/1.Starter_rod.png").convert_alpha(), 0, 1, 0, None) #creates fishing rod with its sprite and stats
+    Hobbyist_rod = Rod("Hobbyist rod", pygame.image.load("Assets/Rods/2.Hobbyist_rod.png").convert_alpha(), 1000, 2, 100, 0)
+    Commercial_rod = Rod("Commercial rod", pygame.image.load("Assets/Rods/3.Commercial_rod.png").convert_alpha(), 2000, 3, 200, 1)
+    Sturdy_rod = Rod("Sturdy rod", pygame.image.load("Assets/Rods/4.Sturdy_rod.png").convert_alpha(), 3000, 4, 350, 2)
+    Rod_of_the_sea = Rod("Rod of the sea", pygame.image.load("Assets/Rods/5.Rod_of_the_sea.png").convert_alpha(), 4000, 5, 600, 3)
+    Rod_of_the_ocean = Rod(" Rod of the ocean", pygame.image.load("Assets/Rods/6.Rod_of_the_ocean.png").convert_alpha(), 5000, 7, 1000, 4)
+    Amethyst_rod = Rod("Amethyst rod", pygame.image.load("Assets/Rods/7.Amethyst_rod.png").convert_alpha(), 6000, 10, 1500, 5)
+    Australium_rod = Rod("Australium rod", pygame.image.load("Assets/Rods/8.Australium_rod.png").convert_alpha(), 7000, 14, 2200, 6)
+    Lightsaber_rod = Rod("Lightsaber rod", pygame.image.load("Assets/Rods/9.Lightsaber_rod.png").convert_alpha(), 8000, 20, 3000, 7)
+    Hellfire_rod = Rod("Hellfire rod", pygame.image.load("Assets/Rods/10.Hellfire_rod.png").convert_alpha(), 9000, 25, 4000, 8)
+    God_rod = Rod("God rod", pygame.image.load("Assets/Rods/11.God_rod.png").convert_alpha(), 10000, 29, 6000, 9)
 
     shop_upgrade_path = [Hobbyist_rod,Commercial_rod,Sturdy_rod,Rod_of_the_sea,Rod_of_the_ocean,Amethyst_rod,Australium_rod,Lightsaber_rod,Hellfire_rod,God_rod] #so the shop displays the next rod the player can buy, excludes starter rod
 
@@ -345,6 +345,13 @@ def main_game(): #all game stuff goes in here
     alert_indicator = pygame.image.load("Assets/Fishing minigame/alert_indicator.png").convert_alpha()
     fishing_minigame_bar = pygame.image.load("Assets/Fishing minigame/fishing_minigame_bar.png").convert_alpha()
     fishing_minigame_fish = pygame.image.load("Assets/Fishing minigame/fishing_minigame_fish.png").convert_alpha()
+
+    def fishing_minigame(player):
+        wait_time_clock = 0
+        catch_time = pygame.time.get_ticks()
+        max_wait_time = 11001 #max wait time is 11s
+        min_wait_time = 11000-player.held_rod.fishing_speed #minimum wait time is based off the player's held rod fishing speed
+        wait_time = random.randint(min_wait_time,max_wait_time)  #player waits random amount of time based off fishing speed and max time
 
 
 # MAIN GAME LOOP
@@ -593,13 +600,15 @@ def main_game(): #all game stuff goes in here
                 screen.blit(player_sprites[player_sprite_count],(player_x_coordinate,player_y_coordinate)) #displays sprite
             else:
                 screen.blit(player_sprites[10], (player_x_coordinate, player_y_coordinate)) #displays sprite with hand held out
+                screen.blit(player.held_rod.sprite,(player_x_coordinate+100,300))
+                fishing_minigame(player) #starts fishing minigame
         else:
             player_y_coordinate = 395
             screen.blit(player_sprites_scaled[player_sprite_count],(player_x_coordinate,player_y_coordinate)) #displays sprite but scaled up a bit and y changed
 
         if show_space == True: #if near interactable area
             if in_shop == False:
-                screen.blit(space, (player_x_coordinate+100,player_y_coordinate)) #displays space indicator near player
+                screen.blit(space, (player_x_coordinate-100,player_y_coordinate)) #displays space indicator near player
             else:
                 screen.blit(space,(player_x_coordinate + 200, player_y_coordinate))  # displays space indicator near player
 
