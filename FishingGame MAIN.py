@@ -1,12 +1,9 @@
 #imports all vital libraries for the game
 import sys
-from multiprocessing.connection import \
-    default_family
 
 import pygame
 import random
 from sys import exit
-sys.setrecursionlimit(2000)
 pygame.init()
 global screen
 screen = pygame.display.set_mode((1280, 720)) #sets the game window size
@@ -104,7 +101,6 @@ def main_game(): #all game stuff goes in here
     last_weather_tick = pygame.time.get_ticks()
 
     day = True #sets time to day
-    daynight_duration = 16000 #sets how long a day and a night is (600000 is 10 minutes)
     last_clock_tick = pygame.time.get_ticks()
 
     Sunny_Sky_Day = pygame.image.load("Assets/Background stuff/background_day_sunny.png").convert_alpha()
@@ -201,7 +197,6 @@ def main_game(): #all game stuff goes in here
     animation_timer = 0
     animation_speed = 9 #sets how quick the animations for the player will play
     D = False
-    player_y_coordinate = 0
 
     background_musics= [pygame.mixer.Sound("Assets/Background stuff/Dave the Diver OST - On the boat.mp3"), #0 Day Clear
                         pygame.mixer.Sound("Assets/Background stuff/Star Wars - Kamino Theme.mp3"), #1 Day Rain
@@ -258,14 +253,17 @@ def main_game(): #all game stuff goes in here
     can_buy = True #instantiates can buy variable for later in the shop, so you cant buy multiple rods every next frame
     inv_bait_amount_font = pygame.font.Font("PressStart2P-Regular.ttf",10)
 
-    class Rod: #create rod class
-        def __init__(self, name, sprite, fishing_speed, luck, cost, upgrade_index): #creates parent class for rods with stats (constructor)
+    class Rod: #declaring rod class
+        def __init__(self, name, sprite, fishing_speed, luck, cost, upgrade_index): #constructor method for rod
             self.name = name
             self.sprite = sprite
             self.fishing_speed = fishing_speed
             self.luck = luck
             self.cost = cost
             self.upgrade_index = upgrade_index
+
+            w, h = sprite.get_size()
+            self.hand_sprite = pygame.transform.scale(sprite, (w*1.8, h*1.8))
 
     class Bait:
         def __init__(self, name, sprite, luck, cost): #creates parent class for bait
@@ -274,7 +272,7 @@ def main_game(): #all game stuff goes in here
             self.luck = luck
             self.cost = cost
 
-    Starter_rod = Rod("Starter rod", pygame.image.load("Assets/Rods/1.Starter_rod.png").convert_alpha(), 0, 1, 0, None) #creates fishing rod with its sprite and stats
+    Starter_rod = Rod("Starter rod", pygame.image.load("Assets/Rods/1.Starter_rod.png").convert_alpha(), 0, 1, 0, None) #instantiating objects of class rod
     Hobbyist_rod = Rod("Hobbyist rod", pygame.image.load("Assets/Rods/2.Hobbyist_rod.png").convert_alpha(), 1000, 2, 100, 0)
     Commercial_rod = Rod("Commercial rod", pygame.image.load("Assets/Rods/3.Commercial_rod.png").convert_alpha(), 2000, 3, 200, 1)
     Sturdy_rod = Rod("Sturdy rod", pygame.image.load("Assets/Rods/4.Sturdy_rod.png").convert_alpha(), 3000, 4, 350, 2)
@@ -295,7 +293,9 @@ def main_game(): #all game stuff goes in here
     Rainbow_bait = Bait("Rainbow bait",pygame.image.load("Assets/Rods/rainbow_bait.png").convert_alpha(), 14, 900)
 
     class Player:
-        def __init__(self,money,weight,held_rod,held_bait,bait_amount,max_weight,weight_upgrade_cost): #makes player class with stats
+        def __init__(self,money,weight,held_rod,held_bait,bait_amount,max_weight,weight_upgrade_cost,fish_start_time,wait_time,reaction_start_time,fish_state,cast,fish_progress,bar_height,fish_height,fish_move_speed,fish_target): #makes player class with stats
+
+            #player stats and shop
             self.money = money
             self.weight = weight
             self.held_rod = held_rod
@@ -304,12 +304,24 @@ def main_game(): #all game stuff goes in here
             self.max_weight = max_weight
             self.weight_upgrade_cost = weight_upgrade_cost
 
+            #fishing minigame variables
+            self.fish_start_time = fish_start_time
+            self.wait_time = wait_time
+            self.reaction_start_time = reaction_start_time
+            self.fish_state = fish_state
+            self.cast = cast
+            self.fish_progress = fish_progress
+            self.bar_height = bar_height
+            self.fish_height = fish_height
+            self.fish_move_speed = fish_move_speed
+            self.fish_target = fish_target
+
         def get_fishing_speed(player):
             return player.held_rod.fishing_speed #returns the players fishing speed
         def get_fishing_luck(player):
             return player.held_rod.luck + player.held_bait.luck #returns players total luck stat
 
-    player = Player(20000,0,Starter_rod,No_bait,0,50,100) #creates player class with starter gear and stats
+    player = Player(20000,0,Starter_rod,No_bait,0,50,100,0,0,0,"idle",False,40,310,345,0,random.randint(45,590)) #instantiate object of class player
 
     def shop_next_rod(player):
         if player.held_rod.upgrade_index == None: #if the player has the starter rod
@@ -343,15 +355,91 @@ def main_game(): #all game stuff goes in here
 
 
     alert_indicator = pygame.image.load("Assets/Fishing minigame/alert_indicator.png").convert_alpha()
-    fishing_minigame_bar = pygame.image.load("Assets/Fishing minigame/fishing_minigame_bar.png").convert_alpha()
+    fishing_minigame_bg = pygame.image.load("Assets/Fishing minigame/fishing_minigame_bar.png").convert_alpha()
     fishing_minigame_fish = pygame.image.load("Assets/Fishing minigame/fishing_minigame_fish.png").convert_alpha()
+    bobber = pygame.image.load("Assets/Fishing minigame/bobber.png").convert_alpha()
+    fishing_minigame_bar = pygame.image.load("Assets/Fishing minigame/fishing_minigame_move_bar.png").convert_alpha()
+    splash = pygame.mixer.Sound("Assets/Fishing minigame/Splash.mp3")  #splash sound effect
+    splash.set_volume(0.05)
 
-    def fishing_minigame(player):
-        wait_time_clock = 0
-        catch_time = pygame.time.get_ticks()
-        max_wait_time = 11001 #max wait time is 11s
-        min_wait_time = 11000-player.held_rod.fishing_speed #minimum wait time is based off the player's held rod fishing speed
-        wait_time = random.randint(min_wait_time,max_wait_time)  #player waits random amount of time based off fishing speed and max time
+    def fishing_minigame(player): #begins minigame
+        current_time = pygame.time.get_ticks() #gets current tick time
+        bottom_y = 680  # this value does not change!! it is the bottom of the bar
+
+        if player.fish_state == "waiting": #if waiting for a fish to bite
+            if current_time - player.fish_start_time >= player.wait_time: #checks and compares wait time with time waited
+                player.fish_state = "react" #reaction game starts
+                player.reaction_start_time = current_time #gets time the reaction game started at
+                splash.play(0)  #play sound effect
+
+        elif player.fish_state == "react": #if the reaction game has started
+            screen.blit(alert_indicator, (player_x_coordinate + 346, 380))  # displays alert symbol
+
+            if key[pygame.K_SPACE]: #if the player presses space
+                player.fish_state = "catching" #begins fishing minigame
+
+            elif current_time - player.reaction_start_time > 1000: #if the player did not press space in time
+                print("missed") #debug, prints missed in console
+                player.fish_state = "idle" #sets state back to idle (not fishing)
+                player.cast = False #stops fishing
+
+        elif player.fish_state == "catching": #if in fishing minigame
+
+            if key[pygame.K_w]: #if player pressing w
+                player.bar_height -= 3  # increase progress (remember - is higher)
+            else:
+                player.bar_height+=3 #decrease height (remember + is lower)
+
+            #boundaries for bar
+            if player.bar_height>=590:
+                player.bar_height-=3
+            elif player.bar_height<=45:
+                player.bar_height+=3
+
+            #chooses where fish goes next
+            if player.fish_height < player.fish_target:
+                player.fish_height += player.fish_move_speed
+            elif player.fish_height > player.fish_target:
+                player.fish_height -= player.fish_move_speed
+
+            if (
+                (player.fish_height<player.fish_target and player.fish_height + player.fish_move_speed>=player.fish_target) #if fish is above where it wants to go, move it down
+                or
+                (player.fish_height > player.fish_target and player.fish_height - player.fish_move_speed <= player.fish_target) #if fish is below where it wants to go, move it up
+            ):
+                player.fish_height = player.fish_target
+                player.fish_move_speed = random.randint(1,5)  # sets move speed to be random every time it changes direction
+                player.fish_target = random.randint(45, 590)  # sets fish's new location to start moving to
+
+                #boundaries for the fish
+                if player.fish_height<45:
+                    player.fish_height = 45
+                elif player.fish_height>590:
+                    player.fish_height = 590
+
+            bar_rect = fishing_minigame_bar.get_rect(topleft=(870,player.bar_height)) #creates a hitbox for the moveable bar
+            fish_rect = fishing_minigame_fish.get_rect(topleft=(865, player.fish_height))  # creates a hitbox for the moving fish
+
+            if bar_rect.colliderect(fish_rect):
+                player.fish_progress+=2 #if bar and fish are touching, increase progress by 2
+            else:
+                player.fish_progress-=2 #if not touching, decrease progress by 2
+
+            if player.fish_progress >= 620: #if max progress reached
+                player.cast = False #exits minigame
+                player.fish_state = "idle"
+
+            elif player.fish_progress <= 0: #if all progress lost
+                player.cast = False
+                player.fish_state = "idle"
+
+            #blitting images
+            screen.blit(dim_overlay, (0, 0))
+            screen.blit(fishing_minigame_bg, (570, 45))
+            screen.blit(fishing_minigame_bar, bar_rect)  # displays moveable rect at rectangle coords
+            screen.blit(fishing_minigame_fish, fish_rect)  # displays fish at rectangle coords
+            pygame.draw.rect(screen, (0, 255, 0), (910,bottom_y-player.fish_progress,20,player.fish_progress)) #PROGRESS DISPLAY - colour, coordinates, width+height
+
 
 
 # MAIN GAME LOOP
@@ -516,64 +604,74 @@ def main_game(): #all game stuff goes in here
 
         show_space = False #instantiate variable for displaying interact indicator
         moving = False #checks if moving
-        cast = False #instantiate variable for checking if the player has their rod cast
 
-        if key[pygame.K_a]: #if pressing a
-            moving = True #player is moving
+        if player.cast == False:
+            if key[pygame.K_a]: #if pressing a
+                moving = True #player is moving
 
-            if D == True: #if switching from right to left
-                player_sprite_count = 5 #update sprite count to left facing
-                D = False #no longer moving right
+                if D == True: #if switching from right to left
+                    player_sprite_count = 5 #update sprite count to left facing
+                    D = False #no longer moving right
 
-            animation_timer +=1 #logic for updating sprite animation
-            if animation_timer > animation_speed: #if enough frames have passed to warrant a change in sprite
-                player_sprite_count +=1 #update sprite
-                animation_timer = 0 #reset frame timer
+                animation_timer +=1 #logic for updating sprite animation
+                if animation_timer > animation_speed: #if enough frames have passed to warrant a change in sprite
+                    player_sprite_count +=1 #update sprite
+                    animation_timer = 0 #reset frame timer
 
-            player_x_coordinate -= player_speed #move player
+                player_x_coordinate -= player_speed #move player
 
-            if player_x_coordinate < -30: #if too far left
-                player_x_coordinate += player_speed #move player back
+                if player_x_coordinate < -30: #if too far left
+                    player_x_coordinate += player_speed #move player back
 
-            if player_sprite_count > 9: #if end of animation cycle
-                player_sprite_count = 6 #set sprite back
+                if player_sprite_count > 9: #if end of animation cycle
+                    player_sprite_count = 6 #set sprite back
 
-        elif key[pygame.K_d]:
-            moving = True
-            D = True #moving right
+            elif key[pygame.K_d]:
+                moving = True
+                D = True #moving right
 
-            animation_timer += 1 #logic for updating sprite animation
-            if animation_timer > animation_speed:
-                player_sprite_count += 1
-                animation_timer = 0
+                animation_timer += 1 #logic for updating sprite animation
+                if animation_timer > animation_speed:
+                    player_sprite_count += 1
+                    animation_timer = 0
 
-            player_x_coordinate += player_speed #move player
+                player_x_coordinate += player_speed #move player
 
-            if in_shop == False: #if outside
-                if player_x_coordinate>640: #if at end of pier
-                    player_x_coordinate -= player_speed #move player back
-            elif in_shop == True: #if inside
-                if player_x_coordinate > 560: #if at store counter
-                    player_x_coordinate -= player_speed #move player back
+                if in_shop == False: #if outside
+                    if player_x_coordinate>640: #if at end of pier
+                        player_x_coordinate -= player_speed #move player back
+                elif in_shop == True: #if inside
+                    if player_x_coordinate > 560: #if at store counter
+                        player_x_coordinate -= player_speed #move player back
 
-            if player_sprite_count > 4: #if end of animation cycle
-                player_sprite_count = 0
+                if player_sprite_count > 4: #if end of animation cycle
+                    player_sprite_count = 0
 
 
-        elif key[pygame.K_SPACE]:
-            if in_shop == False:
-                if 170 <= player_x_coordinate <= 260: #if not in shop and near door
-                    fadeout(fadespeed=1) #fadeout animation
-                    in_shop = True #activates code for in shop
-                elif player_x_coordinate >= 550:  # if player is near the end of the pier
-                    cast = True
+            elif key[pygame.K_SPACE]:
+                if in_shop == False:
+                    if 170 <= player_x_coordinate <= 260: #if not in shop and near door
+                        fadeout(fadespeed=1) #fadeout animation
+                        in_shop = True #activates code for in shop
+                    elif player_x_coordinate >= 550:  # if player is near the end of the pier
+                        print(player.weight,player.max_weight)
+                        if player.weight <= player.max_weight: #if player has inv space
+                            player.cast = True
+                            player.fish_state = "waiting"
+                            player.fish_start_time = pygame.time.get_ticks() #gets time
+                            player.wait_time = random.randint(11000-player.held_rod.fishing_speed, 11001) #calculates how long player has to wait for fish, based off fishing speed
+                            player.fish_move_speed = random.randint(1,5)  # sets move speed to be random every time it changes direction
+                            player.fish_target = random.randint(45, 590)  # sets fish's new location to start moving to
+                            player.fish_progress = 200  # resets progress
+                            player.fish_height = 345  # resets fishes height to center
+                            player.bar_height = 310  # resets bar to center
 
-            elif in_shop == True:
-                if 100 <= player_x_coordinate <= 300: #if in shop and near door
-                    fadeout(fadespeed=1)
-                    in_shop = False #exits shop
-                elif 500 <= player_x_coordinate <= 700:
-                    in_shop_menu = True #activates menu
+                elif in_shop == True:
+                    if 100 <= player_x_coordinate <= 300: #if in shop and near door
+                        fadeout(fadespeed=1)
+                        in_shop = False #exits shop
+                    elif 500 <= player_x_coordinate <= 700:
+                        in_shop_menu = True #activates menu
 
 
         if moving == False: #if stationary
@@ -596,19 +694,22 @@ def main_game(): #all game stuff goes in here
 
         if in_shop == False:
             player_y_coordinate = 265
-            if cast == False:
+            if player.cast == False:
                 screen.blit(player_sprites[player_sprite_count],(player_x_coordinate,player_y_coordinate)) #displays sprite
+
             else:
                 screen.blit(player_sprites[10], (player_x_coordinate, player_y_coordinate)) #displays sprite with hand held out
-                screen.blit(player.held_rod.sprite,(player_x_coordinate+100,300))
-                fishing_minigame(player) #starts fishing minigame
+                screen.blit(player.held_rod.hand_sprite,(player_x_coordinate+100,280))
+                screen.blit(bobber,(player_x_coordinate+158,285))
+                fishing_minigame(player)
+
         else:
             player_y_coordinate = 395
             screen.blit(player_sprites_scaled[player_sprite_count],(player_x_coordinate,player_y_coordinate)) #displays sprite but scaled up a bit and y changed
 
         if show_space == True: #if near interactable area
             if in_shop == False:
-                screen.blit(space, (player_x_coordinate-100,player_y_coordinate)) #displays space indicator near player
+                screen.blit(space, (player_x_coordinate-70,player_y_coordinate)) #displays space indicator near player
             else:
                 screen.blit(space,(player_x_coordinate + 200, player_y_coordinate))  # displays space indicator near player
 
