@@ -348,10 +348,10 @@ def main_game(): #all game stuff goes in here
             return #do nothing
         player.money-=bait.cost #take away cost
         if player.held_bait == bait: #if the player has the same bait they are buying
-            player.bait_amount+=32 #add 32 more bait
+            player.bait_amount+=1 #add 32 more bait
         else:
             player.held_bait = bait #change old bait to new bait
-            player.bait_amount = 32 #set bait amount to 32
+            player.bait_amount = 1 #set bait amount to 32
 
 
     alert_indicator = pygame.image.load("Assets/Fishing minigame/alert_indicator.png").convert_alpha()
@@ -362,6 +362,16 @@ def main_game(): #all game stuff goes in here
     splash = pygame.mixer.Sound("Assets/Fishing minigame/Splash.mp3")  #splash sound effect
     splash.set_volume(0.05)
 
+    class Fish():
+        def __init__(self,rarity,sell_price,weight,weather,sprite):
+            self.rarity = rarity
+            self.sell_price = sell_price
+            self.weight = weight
+
+    #= Fish("",,random.randint(,), ,pygame.image.load("Assets/Fish/").convert_alpha())
+    Blue_tang = Fish("Common", 5, random.randint(0.6,1), ,pygame.image.load("Assets/Fish/").convert_alpha())
+
+
     def fishing_minigame(player): #begins minigame
         current_time = pygame.time.get_ticks() #gets current tick time
         bottom_y = 680  # this value does not change!! it is the bottom of the bar
@@ -371,6 +381,10 @@ def main_game(): #all game stuff goes in here
                 player.fish_state = "react" #reaction game starts
                 player.reaction_start_time = current_time #gets time the reaction game started at
                 splash.play(0)  #play sound effect
+                if player.bait_amount > 0:
+                    player.bait_amount -= 1  # 1 bait is used up
+                    if player.bait_amount == 0:
+                        player.held_bait = No_bait
 
         elif player.fish_state == "react": #if the reaction game has started
             screen.blit(alert_indicator, (player_x_coordinate + 346, 380))  # displays alert symbol
