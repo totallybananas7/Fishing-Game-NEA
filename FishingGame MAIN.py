@@ -95,9 +95,9 @@ def main_game(): #all game stuff goes in here
 
     Foreground = pygame.image.load("Assets/Background stuff/foreground.png").convert_alpha()  # loads fg
 
-    weather_list = ["Clear","Raining","Snowing","Fog"] #sets the weathers
+    weather_list = ["Clear","Rain","Snow","Fog"] #sets the weathers
     current_weather = weather_list[0] #sets default weather to clear
-    weather_duration = random.randint(8000,8001) #creates the weather duration variable used in the while loop between 3 and 7 minutes
+    weather_duration = random.randint(180000,420000) #creates the weather duration variable used in the while loop between 3 and 7 minutes
     last_weather_tick = pygame.time.get_ticks()
 
     day = True #sets time to day
@@ -218,8 +218,8 @@ def main_game(): #all game stuff goes in here
     #creating fonts for the inv and loading images
     board = pygame.image.load("Assets/Menus/board.png").convert_alpha()
     hotbar = pygame.image.load("Assets/Menus/hotbar.png").convert_alpha()
-    Weight_font = pygame.font.Font("PressStart2P-Regular.ttf", 11)
-    Money_font = pygame.font.Font("PressStart2P-Regular.ttf", 14)
+    Weight_font = pygame.font.Font("PressStart2P-Regular.ttf", 17)
+    Money_font = pygame.font.Font("PressStart2P-Regular.ttf", 17)
     Clock_font = pygame.font.Font("PressStart2P-Regular.ttf", 30)
     Weather_font = pygame.font.Font("PressStart2P-Regular.ttf", 20)
     Weather_font_colour = "aqua"
@@ -293,7 +293,7 @@ def main_game(): #all game stuff goes in here
     Rainbow_bait = Bait("Rainbow bait",pygame.image.load("Assets/Rods/rainbow_bait.png").convert_alpha(), 14, 900)
 
     class Player:
-        def __init__(self,money,weight,held_rod,held_bait,bait_amount,max_weight,weight_upgrade_cost,fish_start_time,wait_time,reaction_start_time,fish_state,cast,fish_progress,bar_height,fish_height,fish_move_speed,fish_target): #makes player class with stats
+        def __init__(self,money,weight,held_rod,held_bait,bait_amount,max_weight,weight_upgrade_cost,fish_start_time,wait_time,reaction_start_time,fish_state,cast,fish_progress,bar_height,fish_height,fish_move_speed,fish_target,caught_fish,inventory,fish_display,inventory_page): #makes player class with stats
 
             #player stats and shop
             self.money = money
@@ -316,12 +316,18 @@ def main_game(): #all game stuff goes in here
             self.fish_move_speed = fish_move_speed
             self.fish_target = fish_target
 
+            self.caught_fish = caught_fish
+            self.inventory = inventory
+            self.fish_display = fish_display
+
+            self.inventory_page = inventory_page
+
         def get_fishing_speed(player):
             return player.held_rod.fishing_speed #returns the players fishing speed
         def get_fishing_luck(player):
             return player.held_rod.luck + player.held_bait.luck #returns players total luck stat
 
-    player = Player(20000,0,Starter_rod,No_bait,0,50,100,0,0,0,"idle",False,40,310,345,0,random.randint(45,590)) #instantiate object of class player
+    player = Player(80000,0,Starter_rod,No_bait,0,99900,100,0,0,0,"idle",False,40,310,345,0,random.randint(45,590),None,[],0,0) #instantiate object of class player
 
     def shop_next_rod(player):
         if player.held_rod.upgrade_index == None: #if the player has the starter rod
@@ -348,10 +354,10 @@ def main_game(): #all game stuff goes in here
             return #do nothing
         player.money-=bait.cost #take away cost
         if player.held_bait == bait: #if the player has the same bait they are buying
-            player.bait_amount+=1 #add 32 more bait
+            player.bait_amount+=32 #add 32 more bait
         else:
             player.held_bait = bait #change old bait to new bait
-            player.bait_amount = 1 #set bait amount to 32
+            player.bait_amount = 32 #set bait amount to 32
 
 
     alert_indicator = pygame.image.load("Assets/Fishing minigame/alert_indicator.png").convert_alpha()
@@ -361,16 +367,86 @@ def main_game(): #all game stuff goes in here
     fishing_minigame_bar = pygame.image.load("Assets/Fishing minigame/fishing_minigame_move_bar.png").convert_alpha()
     splash = pygame.mixer.Sound("Assets/Fishing minigame/Splash.mp3")  #splash sound effect
     splash.set_volume(0.05)
+    max_weight_font = pygame.font.Font("PressStart2P-Regular.ttf",20)
+    fish_font = pygame.font.Font("PressStart2P-Regular.ttf",6)
 
     class Fish():
-        def __init__(self,rarity,sell_price,weight,weather,sprite):
+        def __init__(self,name,rarity,sell_price,weight,weather,time,sprite):
+            self.name = name
             self.rarity = rarity
             self.sell_price = sell_price
             self.weight = weight
+            self.weather = weather
+            self.time = time
+            self.sprite = sprite
 
-    #= Fish("",,random.randint(,), ,pygame.image.load("Assets/Fish/").convert_alpha())
-    Blue_tang = Fish("Common", 5, random.randint(0.6,1), ,pygame.image.load("Assets/Fish/").convert_alpha())
+    #Instantiate objects of class Fish. To help with this, ChatGPT AI was used as it would take a very long time to do myself. Code, file paths and digits have been checked!!! The first 3 were done myself.
 
+    Blue_Tang = Fish("Blue tang", "Common", 5, random.uniform(0.4, 0.8), {"Clear", "Fog"}, {True},pygame.image.load("Assets/Fish/Bluetang.png").convert_alpha())
+    Clownfish = Fish("Clownfish", "Common", 5, random.uniform(0.3, 0.6), {"Clear", "Fog"}, {True},pygame.image.load("Assets/Fish/Clownfish.png").convert_alpha())
+    Ornate_Wrasse = Fish("Ornate Wrasse", "Common", 7, random.uniform(0.8, 1), {"Clear", "Fog"}, {True},pygame.image.load("Assets/Fish/Ornate_Wrasse.png").convert_alpha())
+    Yellowback_Fusilier = Fish("Yellowback Fuselier", "Common", 7, random.uniform(1, 1.2), {"Clear", "Rain"},{True, False}, pygame.image.load("Assets/Fish/Yellowback_Fusilier.png").convert_alpha())
+    Arctic_Cod = Fish("Arctic Cod", "Common", 8, random.uniform(2, 3), {"Snow", "Rain"}, {True, False},pygame.image.load("Assets/Fish/Arctic_Cod.png").convert_alpha())
+    Haddock = Fish("Haddock", "Common", 8, random.uniform(1.5, 2.5), {"Clear", "Rain"}, {True},pygame.image.load("Assets/Fish/Haddock.png").convert_alpha())
+    Comber = Fish("Comber", "Common", 7, random.uniform(0.6, 1.0), {"Clear", "Fog"}, {True},pygame.image.load("Assets/Fish/Comber.png").convert_alpha())
+    Herring = Fish("Herring", "Common", 6, random.uniform(0.3, 0.6), {"Clear", "Rain", "Fog"}, {True, False},pygame.image.load("Assets/Fish/Herring.png").convert_alpha())
+    Whiteleg_Shrimp = Fish("White Shrimp", "Common", 5, random.uniform(0.1, 0.3), {"Fog", "Snow"}, {False},pygame.image.load("Assets/Fish/Whiteleg_Shrimp.png").convert_alpha())
+
+    Emperor_Angelfish = Fish("Emperor Angelfish", "Rare", 18, random.uniform(1.5, 2.5), {"Clear", "Fog"}, {True},pygame.image.load("Assets/Fish/Emperor_Angelfish.png").convert_alpha())
+    Lagoon_Triggerfish = Fish("Lagoon Triggerfish", "Rare", 20, random.uniform(2.0, 3.0), {"Clear", "Rain"}, {True},pygame.image.load("Assets/Fish/Lagoon_Triggerfish.png").convert_alpha())
+    White_Trevally = Fish("White Trevally", "Rare", 22, random.uniform(4.0, 6.0), {"Clear", "Rain"}, {True, False},pygame.image.load("Assets/Fish/White_Trevally.png").convert_alpha())
+    Coral_Trout = Fish("Coral Trout", "Rare", 25, random.uniform(3.0, 5.0), {"Clear", "Fog"}, {True},pygame.image.load("Assets/Fish/Coral_Trout.png").convert_alpha())
+    Pacific_Fanfish = Fish("Pacific Fanfish", "Rare", 24, random.uniform(1.2, 2.0), {"Fog", "Rain"}, {True},pygame.image.load("Assets/Fish/Pacific_Fanfish.png").convert_alpha())
+    Titan_Triggerfish = Fish("Titan Triggerfish", "Rare", 28, random.uniform(4.0, 6.5), {"Rain", "Snow"}, {True, False},pygame.image.load("Assets/Fish/Titan_Triggerfish.png").convert_alpha())
+    Cardinal = Fish("Cardinal Fish", "Rare", 16, random.uniform(0.4, 0.8), {"Fog", "Snow"}, {False},pygame.image.load("Assets/Fish/Cardinal.png").convert_alpha())
+
+    Yellowfin_Tuna = Fish("Yellowfin Tuna", "Epic", 60, random.uniform(30, 50), {"Clear", "Rain"}, {True, False},pygame.image.load("Assets/Fish/Yellowfin_Tuna.png").convert_alpha())
+    Albacore = Fish("Albacore", "Epic", 55, random.uniform(20, 35), {"Clear", "Rain"}, {True},pygame.image.load("Assets/Fish/Albacore.png").convert_alpha())
+    Humboldt_Squid = Fish("Humboldt Squid", "Epic", 65, random.uniform(15, 30), {"Fog", "Rain"}, {False},pygame.image.load("Assets/Fish/Humbolt_Squid.png").convert_alpha())
+    Harlequin_Hind = Fish("Harlequin Hind", "Epic", 70, random.uniform(20, 40), {"Clear", "Fog"}, {True},pygame.image.load("Assets/Fish/Harlequin_Hind.png").convert_alpha())
+    Red_Lionfish = Fish("Red Lionfish", "Epic", 75, random.uniform(1.0, 1.8), {"Fog", "Snow"}, {False},pygame.image.load("Assets/Fish/Red_Lionfish.png").convert_alpha())
+
+    Marlin = Fish("Marlin", "Legendary", 300, random.uniform(200, 400), {"Clear", "Rain"}, {True},pygame.image.load("Assets/Fish/Marlin.png").convert_alpha())
+    Shortfin_Mako = Fish("Shortfin Mako", "Legendary", 500, random.uniform(300, 500), {"Clear", "Rain"}, {True, False},pygame.image.load("Assets/Fish/Shortfin_Mako.png").convert_alpha())
+    Thresher_Shark = Fish("Thresher Shark", "Legendary", 500, random.uniform(350, 600), {"Rain", "Fog"}, {False},pygame.image.load("Assets/Fish/Thresher_Shark.png").convert_alpha())
+    Vampire_Squid = Fish("Vampire Squid", "Legendary", 250, random.uniform(8, 15), {"Fog", "Snow"}, {False},pygame.image.load("Assets/Fish/Vampire_Squid.png").convert_alpha())
+
+    #create list with all fish
+    All_Fish = [Blue_Tang,Clownfish,Ornate_Wrasse,Yellowback_Fusilier,Arctic_Cod,Haddock,Comber,Herring,Whiteleg_Shrimp,Emperor_Angelfish,Lagoon_Triggerfish,White_Trevally,Coral_Trout,Pacific_Fanfish, Titan_Triggerfish, Cardinal,Yellowfin_Tuna,Albacore,Humboldt_Squid,Harlequin_Hind,Red_Lionfish,Marlin,Shortfin_Mako,Thresher_Shark,Vampire_Squid]
+
+    def retrieve_fish(player,current_weather,day):
+        roll = random.randint(1, 300) #chooses random num
+        roll += player.get_fishing_luck() #combines it with player luck stat
+
+        if roll > 300: #if too high
+            roll = 300 #set to max
+
+        #choose what rarity to return based off role
+        if roll <= 150:
+            rarity_index = 0
+        elif roll <= 200:
+            rarity_index = 1
+        elif roll <= 280:
+            rarity_index = 2
+        else:
+            rarity_index = 3
+
+        rarity = ["Common", "Rare", "Epic", "Legendary"]
+
+        while rarity_index>=0: #while fish has not been chosen yet
+            possible_fish = [] #empty list of fish that are possible to catch at current game mechanics (rarity, time, weather)
+            for fish in All_Fish: #for every fish in the game
+                if fish.rarity == rarity[rarity_index]: #if rarity is the same
+                    if current_weather in fish.weather: #if weather req is the same
+                        if day in fish.time: #if time req is the same
+                            possible_fish.append(fish) #add fish to possible fish to be caught
+
+            if len(possible_fish) > 0: #if a fish is found
+                caught_fish = random.choice(possible_fish)
+                return caught_fish
+
+            else:
+                rarity_index -= 1 #drop to lower rarity
 
     def fishing_minigame(player): #begins minigame
         current_time = pygame.time.get_ticks() #gets current tick time
@@ -435,24 +511,38 @@ def main_game(): #all game stuff goes in here
             fish_rect = fishing_minigame_fish.get_rect(topleft=(865, player.fish_height))  # creates a hitbox for the moving fish
 
             if bar_rect.colliderect(fish_rect):
-                player.fish_progress+=2 #if bar and fish are touching, increase progress by 2
+                player.fish_progress+=10 #if bar and fish are touching, increase progress by 2
             else:
                 player.fish_progress-=2 #if not touching, decrease progress by 2
 
             if player.fish_progress >= 620: #if max progress reached
-                player.cast = False #exits minigame
-                player.fish_state = "idle"
+                player.fish_state = "won"
+
 
             elif player.fish_progress <= 0: #if all progress lost
                 player.cast = False
                 player.fish_state = "idle"
 
-            #blitting images
+            # blitting images
             screen.blit(dim_overlay, (0, 0))
             screen.blit(fishing_minigame_bg, (570, 45))
             screen.blit(fishing_minigame_bar, bar_rect)  # displays moveable rect at rectangle coords
             screen.blit(fishing_minigame_fish, fish_rect)  # displays fish at rectangle coords
-            pygame.draw.rect(screen, (0, 255, 0), (910,bottom_y-player.fish_progress,20,player.fish_progress)) #PROGRESS DISPLAY - colour, coordinates, width+height
+            pygame.draw.rect(screen, (0, 255, 0), (910, bottom_y - player.fish_progress, 20,player.fish_progress))  # PROGRESS DISPLAY - colour, coordinates, width+height
+
+
+        elif player.fish_state == "won":
+            caught_fish=retrieve_fish(player,current_weather,day)
+            player.caught_fish = caught_fish
+            player.weight += caught_fish.weight
+            player.inventory.append(caught_fish)
+            player.fish_state = "show_fish"
+            player.show_fish = pygame.time.get_ticks()
+            player.cast = False
+            print(f"New fish caught: {player.caught_fish.name}, New fish caught weight: {player.caught_fish.weight:.2f}, New fish caught rarity: {player.caught_fish.rarity}")
+
+
+
 
 
 
@@ -510,7 +600,7 @@ def main_game(): #all game stuff goes in here
                     new_background_music_index = 4
                     Weather_font_colour = "aqua"
 
-            elif current_weather == "Raining":
+            elif current_weather == "Rain":
                 if day == True:
                     weather_bg = Rainy_Sky_Day
                     cloud1 = cloud_rainy_1
@@ -540,7 +630,7 @@ def main_game(): #all game stuff goes in here
                     new_background_music_index = 6
                     Weather_font_colour = "azure3"
 
-            elif current_weather == "Snowing":
+            elif current_weather == "Snow":
                 if day == True:
                     weather_bg = FogSnow_Sky_Day
                     snow = True
@@ -561,17 +651,17 @@ def main_game(): #all game stuff goes in here
             screen.blit(Foreground,(0,0))
 
         if in_shop == False: #if the player is outside
-            if current_weather == "Clear" or current_weather == "Raining":
+            if current_weather == "Clear" or current_weather == "Rain":
                 screen.blit(cloud1,(cloud_1_x,cloud_1_y))  # displays cloud
                 cloud_1_x += 1  # moves cloud 1 pixel left
                 if cloud_1_x >= 1280:  # checks to see if cloud to far right off-screen
                     cloud_1_x = 0  # moves cloud back to the start
-            if current_weather == "Clear" or current_weather == "Raining":
+            if current_weather == "Clear" or current_weather == "Rain":
                 screen.blit(cloud2,(cloud_2_x,cloud_2_y))
                 cloud_2_x += 0.4
                 if cloud_2_x >= 1280:
                     cloud_2_x = 0
-            if current_weather == "Clear" or current_weather == "Raining":
+            if current_weather == "Clear" or current_weather == "Rain":
                 screen.blit(cloud3,(cloud_3_x,cloud_3_y))
                 cloud_3_x += 0.8
                 if cloud_3_x >= 1280:
@@ -613,6 +703,23 @@ def main_game(): #all game stuff goes in here
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_e:
+                    inventory_open = not inventory_open
+                    if inventory_open == True:
+                        player.inventory_page = 0
+
+            if event.type == pygame.MOUSEBUTTONDOWN and inventory_open == True:  # if mouse clicked
+                x, y = pygame.mouse.get_pos()
+                if 1075<=x<=1110 and 100<=y<=130: #if near the X button
+                    inventory_open = False #inv is closed
+                if 1075<=x<=1110 and 135<=y<=170: #if click on up arrow
+                    if player.inventory_page>0: #prevent going on a page smaller than 0
+                        player.inventory_page-=1 #go up a page
+                if  1075 <=x<=1110 and 585<=y<=620: #if click on down arrow
+                    if (player.inventory_page+1)*9<len(inventory_summary_list): #if there are fish on the next page
+                        player.inventory_page+=1 #go to next page
 
         key = pygame.key.get_pressed() #records the keyboard/mouse for any inputs
 
@@ -668,7 +775,6 @@ def main_game(): #all game stuff goes in here
                         fadeout(fadespeed=1) #fadeout animation
                         in_shop = True #activates code for in shop
                     elif player_x_coordinate >= 550:  # if player is near the end of the pier
-                        print(player.weight,player.max_weight)
                         if player.weight <= player.max_weight: #if player has inv space
                             player.cast = True
                             player.fish_state = "waiting"
@@ -679,6 +785,8 @@ def main_game(): #all game stuff goes in here
                             player.fish_progress = 200  # resets progress
                             player.fish_height = 345  # resets fishes height to center
                             player.bar_height = 310  # resets bar to center
+                        else:
+                            screen.blit(max_weight_font.render("Max weight reached!",False,"Red"),(player_x_coordinate+200,300))
 
                 elif in_shop == True:
                     if 100 <= player_x_coordinate <= 300: #if in shop and near door
@@ -730,26 +838,43 @@ def main_game(): #all game stuff goes in here
 
 # Inventory/GUI
 
-        if key[pygame.K_e]: #if the player opens the inventory
-            inventory_open = True
-
         if inventory_open == True:
             screen.blit(dim_overlay, (0, 0)) #puts the faded new screen to make the background darker to bring more contrast to inv
 
             #displays inv and text
             screen.blit(inventory,(160,90))
-            screen.blit(inventory_font.render("Money:", False, "yellow"), (175,107))
-            screen.blit(inventory_font.render("Weight:", False, "yellow"), (480,107))
+            screen.blit(inventory_font.render(f"Money: £{player.money}", False, "yellow"), (175,107))
+            screen.blit(inventory_font.render(f"Weight: {player.weight:.0f}kg", False, "yellow"), (480,107))
             screen.blit(inventory_font.render("Fishdex:", False, "yellow"), (780,107))
             screen.blit(inventory_font.render("Fish:", False, "yellow"), (175,145))
             screen.blit(inventory_font.render("Quantity:", False, "yellow"), (480,145))
             screen.blit(inventory_font.render("Sell Price:", False, "yellow"), (780, 145))
 
-            inv_mouse_pos = pygame.mouse.get_pos() #gets mouse pos
-            x, y = inv_mouse_pos #gets x and y variables of mouse pos
-            if 1075<=x<=1110 and 100<=y<=130: #if near the X button
-                if event.type == pygame.MOUSEBUTTONDOWN: #if mouse clicked
-                    inventory_open = False #inv is closed
+            inventory_summary = {} #creates emtpy dictionary
+            for fish in player.inventory: #for each fish inside the players inv
+                if fish.name not in inventory_summary: #if fish's name isnt in it
+                    inventory_summary[fish.name] = {"fish":fish, "quantity":1} #add it with a quantity of 1
+                else:
+                    inventory_summary[fish.name]["quantity"]+=1 #otherwise add another to the quantity
+
+            inventory_summary_list = list(inventory_summary.values()) #.values() returns just values of the item, list() converts the dictionary into a normal list
+            #calculates what fish to show
+            start = player.inventory_page*9 #calculate starting index
+            end = start+9 #calculate ending index
+            visible_fish = inventory_summary_list[start:end] #take only fish entries from current page
+            text_y_pos = 185
+            for entry in visible_fish: #for each fish in the fish that will be displayed
+                fish = entry["fish"] #get fish object from entry dictionary
+                quantity = entry["quantity"] #how many fish of this name does the player own?
+                total_price = fish.sell_price*quantity #how much does it all sell for?
+                screen.blit(inventory_font.render(f"{fish.name}", False, "yellow"), (175,text_y_pos)) #show stats
+                screen.blit(inventory_font.render(f"{quantity}", False, "yellow"), (475,text_y_pos))
+                screen.blit(inventory_font.render(f"{total_price}", False, "yellow"), (775,text_y_pos))
+                text_y_pos+=50 #for the next fish, blit info 50 pixels down
+
+
+
+
 
         elif in_shop_menu == True:
             screen.blit(dim_overlay,(0,0)) #displays gui stuff
@@ -812,6 +937,12 @@ def main_game(): #all game stuff goes in here
                     if can_buy == True:
                         buy_bait(player, Rainbow_bait)
                         can_buy = False
+                if 1160<=x<=1250 and 645<=y<=690:
+                    for fish in player.inventory:
+                        player.money+=fish.sell_price
+                        player.weight = 0
+                    player.inventory.clear()
+
 
 
             if event.type == pygame.MOUSEBUTTONUP: #if player lets go of mouse
@@ -822,7 +953,8 @@ def main_game(): #all game stuff goes in here
             ingame_clock = hour_display+":"+minute_display
 
             screen.blit(board,(1080,650)) #bottom right (weight)
-            screen.blit(Weight_font.render(f"Weight: {player.weight}kg/{player.max_weight}kg", False, "yellow"), (1087, 677))
+            screen.blit(Weight_font.render("Weight:", False, "yellow"), (1087, 657))
+            screen.blit(Weight_font.render(f"{player.weight:.0f}kg/{player.max_weight}kg", False, "yellow"), (1087, 687))
 
             screen.blit(board,(1080,5)) #top right (time)
             screen.blit(Clock_font.render(ingame_clock, False, "yellow"),(1100,25))
@@ -835,11 +967,21 @@ def main_game(): #all game stuff goes in here
 
         #these are out of the loop so they are always displayed, even if in shop/inv GUI
         screen.blit(board,(10,5)) #top left (money)
-        screen.blit(Money_font.render(f"Money: £{player.money}", False, "yellow"), (20, 32))
+        screen.blit(Money_font.render("Money:", False, "yellow"), (20, 12))
+        screen.blit(Money_font.render(f"£{player.money}", False, "yellow"), (20, 42))
         screen.blit(hotbar,(576,650)) #bottom middle (hotbar)
         screen.blit(player.held_rod.sprite, (590,665))
         screen.blit(player.held_bait.sprite, (650, 665))
         screen.blit(inv_bait_amount_font.render(f"{player.bait_amount}", False, "white"), (676,663))
+
+        if player.fish_state == "show_fish": #if player has caught a fish
+            current_time = pygame.time.get_ticks() #get time
+            if current_time - player.show_fish <5000: #for the next 5 seconds, show the fish sprite and name of the fish they caught
+                screen.blit(board,(10,650))
+                screen.blit(player.caught_fish.sprite, (20,665))
+                screen.blit(fish_font.render(f"{player.caught_fish.name}",False,"yellow"), (60,665))
+            else:
+                player.fish_state = "idle"
 
         pygame.display.update()
         Clock.tick(FPS)
