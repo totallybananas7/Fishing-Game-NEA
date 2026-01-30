@@ -327,7 +327,7 @@ def main_game(): #all game stuff goes in here
         def get_fishing_luck(player):
             return player.held_rod.luck + player.held_bait.luck #returns players total luck stat
 
-    player = Player(80000,0,Starter_rod,No_bait,0,99900,100,0,0,0,"idle",False,40,310,345,0,random.randint(45,590),None,[],0,0) #instantiate object of class player
+    player = Player(0,0,Starter_rod,No_bait,0,50,50,0,0,0,"idle",False,40,310,345,0,random.randint(45,590),None,[],0,0) #instantiate object of class player
 
     def shop_next_rod(player):
         if player.held_rod.upgrade_index == None: #if the player has the starter rod
@@ -346,7 +346,7 @@ def main_game(): #all game stuff goes in here
     def buy_next_weight(player):
         if player.money>=player.weight_upgrade_cost: #if player has enough money
             player.money-=player.weight_upgrade_cost #take away money
-            player.weight_upgrade_cost+=100 #buff price by 100
+            player.weight_upgrade_cost+=50 #buff price by 100
             player.max_weight+=10 #give player +10 max weight
 
     def buy_bait(player, bait):
@@ -422,14 +422,14 @@ def main_game(): #all game stuff goes in here
             roll = 300 #set to max
 
         #choose what rarity to return based off role
-        if roll <= 150:
-            rarity_index = 0
-        elif roll <= 200:
-            rarity_index = 1
-        elif roll <= 280:
-            rarity_index = 2
+        if roll <= 275:
+            rarity_index = 0 #common
+        elif roll <= 295:
+            rarity_index = 1 #rare
+        elif roll <= 299:
+            rarity_index = 2 #epic
         else:
-            rarity_index = 3
+            rarity_index = 3 #legendary
 
         rarity = ["Common", "Rare", "Epic", "Legendary"]
 
@@ -442,7 +442,7 @@ def main_game(): #all game stuff goes in here
                             possible_fish.append(fish) #add fish to possible fish to be caught
 
             if len(possible_fish) > 0: #if a fish is found
-                caught_fish = random.choice(possible_fish)
+                caught_fish = random.choice(possible_fish) #choose one of the elegible fish at random
                 return caught_fish
 
             else:
@@ -481,8 +481,8 @@ def main_game(): #all game stuff goes in here
                 player.bar_height+=3 #decrease height (remember + is lower)
 
             #boundaries for bar
-            if player.bar_height>=590:
-                player.bar_height-=3
+            if player.bar_height>=590: #if too low
+                player.bar_height-=3 #increase bar height by 3
             elif player.bar_height<=45:
                 player.bar_height+=3
 
@@ -511,7 +511,7 @@ def main_game(): #all game stuff goes in here
             fish_rect = fishing_minigame_fish.get_rect(topleft=(865, player.fish_height))  # creates a hitbox for the moving fish
 
             if bar_rect.colliderect(fish_rect):
-                player.fish_progress+=10 #if bar and fish are touching, increase progress by 2
+                player.fish_progress+=2 #if bar and fish are touching, increase progress by 2
             else:
                 player.fish_progress-=2 #if not touching, decrease progress by 2
 
@@ -532,14 +532,14 @@ def main_game(): #all game stuff goes in here
 
 
         elif player.fish_state == "won":
-            caught_fish=retrieve_fish(player,current_weather,day)
-            player.caught_fish = caught_fish
-            player.weight += caught_fish.weight
-            player.inventory.append(caught_fish)
-            player.fish_state = "show_fish"
-            player.show_fish = pygame.time.get_ticks()
+            caught_fish=retrieve_fish(player,current_weather,day) #gets the caught fish from the subroutine retrieve fish
+            player.caught_fish = caught_fish #sets the caught fish into player class
+            player.weight += caught_fish.weight #adds the fish's weight to the player's weight
+            player.inventory.append(caught_fish) #adds caught fish to inventory array
+            player.fish_state = "show_fish" #turns on variable to show what the player caught
+            player.show_fish = pygame.time.get_ticks() #gets the time the fish was caught
             player.cast = False
-            print(f"New fish caught: {player.caught_fish.name}, New fish caught weight: {player.caught_fish.weight:.2f}, New fish caught rarity: {player.caught_fish.rarity}")
+            print(f"New fish caught: {player.caught_fish.name}, New fish caught weight: {player.caught_fish.weight:.2f}, New fish caught rarity: {player.caught_fish.rarity}") #debug, shows what i caught and its stats
 
 
 
@@ -704,11 +704,11 @@ def main_game(): #all game stuff goes in here
                 pygame.quit()
                 exit()
 
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_e:
-                    inventory_open = not inventory_open
-                    if inventory_open == True:
-                        player.inventory_page = 0
+            if event.type == pygame.KEYDOWN: #if a key is pressed
+                if event.key == pygame.K_e: #if its e
+                    inventory_open = not inventory_open #flips state of inventory_open
+                    if inventory_open == True: #if it is true
+                        player.inventory_page = 0 #page inv on is the first one
 
             if event.type == pygame.MOUSEBUTTONDOWN and inventory_open == True:  # if mouse clicked
                 x, y = pygame.mouse.get_pos()
@@ -867,8 +867,7 @@ def main_game(): #all game stuff goes in here
                 fish = entry["fish"] #get fish object from entry dictionary
                 quantity = entry["quantity"] #how many fish of this name does the player own?
                 total_price = fish.sell_price*quantity #how much does it all sell for?
-                screen.blit(inventory_font.render(f"{fish.name}", False, "yellow"), (175,text_y_pos)) #show stats
-                screen.blit(inventory_font.render(f"{quantity}", False, "yellow"), (475,text_y_pos))
+                screen.blit(inventory_font.render(f"{fish.name}   x{quantity}", False, "yellow"), (175,text_y_pos)) #show stats
                 screen.blit(inventory_font.render(f"{total_price}", False, "yellow"), (775,text_y_pos))
                 text_y_pos+=50 #for the next fish, blit info 50 pixels down
 
@@ -942,8 +941,6 @@ def main_game(): #all game stuff goes in here
                         player.money+=fish.sell_price
                         player.weight = 0
                     player.inventory.clear()
-
-
 
             if event.type == pygame.MOUSEBUTTONUP: #if player lets go of mouse
                 can_buy = True #player can buy something again
