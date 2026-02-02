@@ -97,7 +97,7 @@ def main_game(): #all game stuff goes in here
 
     weather_list = ["Clear","Rain","Snow","Fog"] #sets the weathers
     current_weather = weather_list[0] #sets default weather to clear
-    weather_duration = random.randint(180000,420000) #creates the weather duration variable used in the while loop between 3 and 7 minutes
+    weather_duration = random.randint(1800,4200) #creates the weather duration variable used in the while loop between 3 and 7 minutes
     last_weather_tick = pygame.time.get_ticks()
 
     day = True #sets time to day
@@ -223,7 +223,8 @@ def main_game(): #all game stuff goes in here
     Clock_font = pygame.font.Font("PressStart2P-Regular.ttf", 30)
     Weather_font = pygame.font.Font("PressStart2P-Regular.ttf", 20)
     Weather_font_colour = "aqua"
-    Fishdex_font = pygame.font.Font("PressStart2P-Regular.ttf", 9)
+    Fishdex_font = pygame.font.Font("PressStart2P-Regular.ttf", 21)
+    Fishdex_font1 = pygame.font.Font("PressStart2P-Regular.ttf", 15)
 
     minutes = [00, 10, 20, 30, 40, 50] #list of possible minutes the clock can display
     minute_hand = 00  # creates value for minute list above, starting at 00
@@ -293,7 +294,7 @@ def main_game(): #all game stuff goes in here
     Rainbow_bait = Bait("Rainbow bait",pygame.image.load("Assets/Rods/rainbow_bait.png").convert_alpha(), 14, 900)
 
     class Player:
-        def __init__(self,money,weight,held_rod,held_bait,bait_amount,max_weight,weight_upgrade_cost,fish_start_time,wait_time,reaction_start_time,fish_state,cast,fish_progress,bar_height,fish_height,fish_move_speed,fish_target,caught_fish,inventory,fish_display,inventory_page): #makes player class with stats
+        def __init__(self,money,weight,held_rod,held_bait,bait_amount,max_weight,weight_upgrade_cost,fish_start_time,wait_time,reaction_start_time,fish_state,cast,fish_progress,bar_height,fish_height,fish_move_speed,fish_target,caught_fish,inventory,fish_display,inventory_page,unique_fish_caught): #makes player class with stats
 
             #player stats and shop
             self.money = money
@@ -322,12 +323,14 @@ def main_game(): #all game stuff goes in here
 
             self.inventory_page = inventory_page
 
+            self.unique_fish_caught = unique_fish_caught
+
         def get_fishing_speed(player):
             return player.held_rod.fishing_speed #returns the players fishing speed
         def get_fishing_luck(player):
             return player.held_rod.luck + player.held_bait.luck #returns players total luck stat
 
-    player = Player(0,0,Starter_rod,No_bait,0,50,50,0,0,0,"idle",False,40,310,345,0,random.randint(45,590),None,[],0,0) #instantiate object of class player
+    player = Player(20000,0,Starter_rod,No_bait,0,50,50,0,0,0,"idle",False,40,310,345,0,random.randint(45,590),None,[],0,0,0) #instantiate object of class player
 
     def shop_next_rod(player):
         if player.held_rod.upgrade_index == None: #if the player has the starter rod
@@ -378,7 +381,8 @@ def main_game(): #all game stuff goes in here
             self.weight = weight
             self.weather = weather
             self.time = time
-            self.sprite = sprite
+            self.sprite = sprite #original sprite
+            self.ui_sprite = None #64x64 sprite for UI display
 
     #Instantiate objects of class Fish. To help with this, ChatGPT AI was used as it would take a very long time to do myself. Code, file paths and digits have been checked!!! The first 3 were done myself.
 
@@ -415,7 +419,7 @@ def main_game(): #all game stuff goes in here
     All_Fish = [Blue_Tang,Clownfish,Ornate_Wrasse,Yellowback_Fusilier,Arctic_Cod,Haddock,Comber,Herring,Whiteleg_Shrimp,Emperor_Angelfish,Lagoon_Triggerfish,White_Trevally,Coral_Trout,Pacific_Fanfish, Titan_Triggerfish, Cardinal,Yellowfin_Tuna,Albacore,Humboldt_Squid,Harlequin_Hind,Red_Lionfish,Marlin,Shortfin_Mako,Thresher_Shark,Vampire_Squid]
 
     def retrieve_fish(player,current_weather,day):
-        roll = random.randint(1, 300) #chooses random num
+        roll = random.randint(260, 300) #chooses random num
         roll += player.get_fishing_luck() #combines it with player luck stat
 
         if roll > 300: #if too high
@@ -541,9 +545,17 @@ def main_game(): #all game stuff goes in here
             player.cast = False
             print(f"New fish caught: {player.caught_fish.name}, New fish caught weight: {player.caught_fish.weight:.2f}, New fish caught rarity: {player.caught_fish.rarity}") #debug, shows what i caught and its stats
 
+    FISH_BOX_SIZE = 64 #sprites will show as 64x64 in the fishdex
+    for fish in All_Fish:
+        sprite = fish.sprite #og fish sprite
+        original_width = sprite.get_width()
+        original_height = sprite.get_height()
+        scale_factor = min(FISH_BOX_SIZE/original_width, FISH_BOX_SIZE/original_height) #calc scale factor so sprite fits in box
+        new_width = int(original_width*scale_factor) #creates new width
+        new_height = int(original_height*scale_factor) #creates new height
+        fish.ui_sprite = pygame.transform.scale(sprite,(new_width,new_height)) #scales fish up to 64x64
 
-
-
+    fishdex_menu = pygame.image.load("Assets/Menus/fishdex.png").convert_alpha()
 
 
 # MAIN GAME LOOP
@@ -575,7 +587,7 @@ def main_game(): #all game stuff goes in here
 
         if current_time - last_weather_tick >= weather_duration: #if the time passed is equal to the random weather duration
             last_weather_tick = current_time #resets timer
-            weather_duration = random.randint(180000,420000)  # creates the new weather duration variable between 3 (180000)and 7 (420000) minutes
+            weather_duration = random.randint(1800,4200)  # creates the new weather duration variable between 3 (180000)and 7 (420000) minutes
             new_weather = random.choice(weather_list)
             fog = False
             rain = False
@@ -709,6 +721,8 @@ def main_game(): #all game stuff goes in here
                     inventory_open = not inventory_open #flips state of inventory_open
                     if inventory_open == True: #if it is true
                         player.inventory_page = 0 #page inv on is the first one
+                if event.key == pygame.K_f:
+                    fishdex_open = not fishdex_open
 
             if event.type == pygame.MOUSEBUTTONDOWN and inventory_open == True:  # if mouse clicked
                 x, y = pygame.mouse.get_pos()
@@ -872,9 +886,6 @@ def main_game(): #all game stuff goes in here
                 text_y_pos+=50 #for the next fish, blit info 50 pixels down
 
 
-
-
-
         elif in_shop_menu == True:
             screen.blit(dim_overlay,(0,0)) #displays gui stuff
             screen.blit(shop_menu,(160,90))
@@ -947,7 +958,7 @@ def main_game(): #all game stuff goes in here
 
 
         else:
-            ingame_clock = hour_display+":"+minute_display
+            ingame_clock = str(hour_display).zfill(2)+":"+str(minute_display).zfill(2) #zfill if string is 1 character long it puts a 0 at the start of the string until is as long as parameter put in (2)
 
             screen.blit(board,(1080,650)) #bottom right (weight)
             screen.blit(Weight_font.render("Weight:", False, "yellow"), (1087, 657))
@@ -960,7 +971,9 @@ def main_game(): #all game stuff goes in here
             screen.blit(Weather_font.render(current_weather, False, Weather_font_colour), (1105, 97))
 
             screen.blit(board,(1080,145)) #third top right (fishdex)
-            screen.blit(Fishdex_font.render("Fishdex placeholder", False, "yellow"),(1092,170))
+            screen.blit(Fishdex_font.render(f"{player.unique_fish_caught}/25", False, "yellow"),(1088,167))
+            screen.blit(Fishdex_font1.render("Fish", False, "yellow"), (1179, 160))
+            screen.blit(Fishdex_font1.render("Caught", False, "yellow"), (1179,178))
 
         #these are out of the loop so they are always displayed, even if in shop/inv GUI
         screen.blit(board,(10,5)) #top left (money)
@@ -973,10 +986,15 @@ def main_game(): #all game stuff goes in here
 
         if player.fish_state == "show_fish": #if player has caught a fish
             current_time = pygame.time.get_ticks() #get time
-            if current_time - player.show_fish <5000: #for the next 5 seconds, show the fish sprite and name of the fish they caught
-                screen.blit(board,(10,650))
-                screen.blit(player.caught_fish.sprite, (20,665))
-                screen.blit(fish_font.render(f"{player.caught_fish.name}",False,"yellow"), (60,665))
+            if current_time - player.show_fish <10000: #for the next 5 seconds, show the fish sprite and name of the fish they caught
+                screen.blit(board,(10,656))
+
+                box_x, box_y = 15,656 #top left of 64x64 area
+                fish_sprite = player.caught_fish.ui_sprite #gets prescaled UI version of fish sprite
+                fish_rect = fish_sprite.get_rect(center=(box_x+32, box_y+32)) #create a rect for the sprite and center it inside the 64x64 box
+                screen.blit(fish_sprite,fish_rect) #draw at calculated position
+
+                screen.blit(fish_font.render(f"{player.caught_fish.name}",False,"yellow"), (80,680))
             else:
                 player.fish_state = "idle"
 
