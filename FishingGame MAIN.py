@@ -294,7 +294,7 @@ def main_game(): #all game stuff goes in here
     Rainbow_bait = Bait("Rainbow bait",pygame.image.load("Assets/Rods/rainbow_bait.png").convert_alpha(), 14, 900)
 
     class Player:
-        def __init__(self,money,weight,held_rod,held_bait,bait_amount,max_weight,weight_upgrade_cost,fish_start_time,wait_time,reaction_start_time,fish_state,cast,fish_progress,bar_height,fish_height,fish_move_speed,fish_target,caught_fish,inventory,fish_display,inventory_page,unique_fish_caught): #makes player class with stats
+        def __init__(self,money,weight,held_rod,held_bait,bait_amount,max_weight,weight_upgrade_cost,fish_start_time,wait_time,reaction_start_time,fish_state,cast,fish_progress,bar_height,fish_height,fish_move_speed,fish_target,caught_fish,inventory,fish_display,inventory_page,unique_fish_caught,fishdex_page): #makes player class with stats
 
             #player stats and shop
             self.money = money
@@ -322,6 +322,7 @@ def main_game(): #all game stuff goes in here
             self.fish_display = fish_display
 
             self.inventory_page = inventory_page
+            self.fishdex_page = fishdex_page
 
             self.unique_fish_caught = unique_fish_caught
 
@@ -330,7 +331,7 @@ def main_game(): #all game stuff goes in here
         def get_fishing_luck(player):
             return player.held_rod.luck + player.held_bait.luck #returns players total luck stat
 
-    player = Player(20000,0,Starter_rod,No_bait,0,50,50,0,0,0,"idle",False,40,310,345,0,random.randint(45,590),None,[],0,0,0) #instantiate object of class player
+    player = Player(20000,0,Starter_rod,No_bait,0,50,50,0,0,0,"idle",False,40,310,345,0,random.randint(45,590),None,[],0,0,0,0) #instantiate object of class player
 
     def shop_next_rod(player):
         if player.held_rod.upgrade_index == None: #if the player has the starter rod
@@ -382,7 +383,9 @@ def main_game(): #all game stuff goes in here
             self.weather = weather
             self.time = time
             self.sprite = sprite #original sprite
+
             self.ui_sprite = None #64x64 sprite for UI display
+            self.caught_before = False
 
     #Instantiate objects of class Fish. To help with this, ChatGPT AI was used as it would take a very long time to do myself. Code, file paths and digits have been checked!!! The first 3 were done myself.
 
@@ -417,6 +420,7 @@ def main_game(): #all game stuff goes in here
 
     #create list with all fish
     All_Fish = [Blue_Tang,Clownfish,Ornate_Wrasse,Yellowback_Fusilier,Arctic_Cod,Haddock,Comber,Herring,Whiteleg_Shrimp,Emperor_Angelfish,Lagoon_Triggerfish,White_Trevally,Coral_Trout,Pacific_Fanfish, Titan_Triggerfish, Cardinal,Yellowfin_Tuna,Albacore,Humboldt_Squid,Harlequin_Hind,Red_Lionfish,Marlin,Shortfin_Mako,Thresher_Shark,Vampire_Squid]
+    fishdex_list = All_Fish
 
     def retrieve_fish(player,current_weather,day):
         roll = random.randint(260, 300) #chooses random num
@@ -542,6 +546,11 @@ def main_game(): #all game stuff goes in here
             player.inventory.append(caught_fish) #adds caught fish to inventory array
             player.fish_state = "show_fish" #turns on variable to show what the player caught
             player.show_fish = pygame.time.get_ticks() #gets the time the fish was caught
+
+            if caught_fish.caught_before == False: #if the fish hasn't been caught before
+                caught_fish.caught_before = True #it has now been caught
+                player.unique_fish_caught+=1 #updates counter
+
             player.cast = False
             print(f"New fish caught: {player.caught_fish.name}, New fish caught weight: {player.caught_fish.weight:.2f}, New fish caught rarity: {player.caught_fish.rarity}") #debug, shows what i caught and its stats
 
@@ -556,6 +565,8 @@ def main_game(): #all game stuff goes in here
         fish.ui_sprite = pygame.transform.scale(sprite,(new_width,new_height)) #scales fish up to 64x64
 
     fishdex_menu = pygame.image.load("Assets/Menus/fishdex.png").convert_alpha()
+    fishdex_open = False
+    fishdex_font = pygame.font.Font("PressStart2P-Regular.ttf",10)
 
 
 # MAIN GAME LOOP
@@ -723,17 +734,27 @@ def main_game(): #all game stuff goes in here
                         player.inventory_page = 0 #page inv on is the first one
                 if event.key == pygame.K_f:
                     fishdex_open = not fishdex_open
+                    if fishdex_open == True:
+                        player.fishdex_page = 0
 
-            if event.type == pygame.MOUSEBUTTONDOWN and inventory_open == True:  # if mouse clicked
+            if event.type == pygame.MOUSEBUTTONDOWN and (inventory_open == True or fishdex_open == True):  # if mouse clicked and either the fishdex or inventory is open
                 x, y = pygame.mouse.get_pos()
                 if 1075<=x<=1110 and 100<=y<=130: #if near the X button
                     inventory_open = False #inv is closed
+                    fishdex_open = False
                 if 1075<=x<=1110 and 135<=y<=170: #if click on up arrow
                     if player.inventory_page>0: #prevent going on a page smaller than 0
                         player.inventory_page-=1 #go up a page
+                    if player.fishdex_page>0:
+                        player.fishdex_page-=1
+
                 if  1075 <=x<=1110 and 585<=y<=620: #if click on down arrow
-                    if (player.inventory_page+1)*9<len(inventory_summary_list): #if there are fish on the next page
-                        player.inventory_page+=1 #go to next page
+                    if inventory_open == True:
+                        if (player.inventory_page+1)*9<len(inventory_summary_list): #if there are fish on the next page
+                            player.inventory_page+=1 #go to next page
+                    if fishdex_open == True:
+                        if (player.fishdex_page+1)*3<len(All_Fish):
+                            player.fishdex_page+=1
 
         key = pygame.key.get_pressed() #records the keyboard/mouse for any inputs
 
@@ -884,6 +905,34 @@ def main_game(): #all game stuff goes in here
                 screen.blit(inventory_font.render(f"{fish.name}   x{quantity}", False, "yellow"), (175,text_y_pos)) #show stats
                 screen.blit(inventory_font.render(f"{total_price}", False, "yellow"), (775,text_y_pos))
                 text_y_pos+=50 #for the next fish, blit info 50 pixels down
+
+        elif fishdex_open == True:
+            screen.blit(dim_overlay, (0,0))
+            screen.blit(fishdex_menu,(160,90))
+            screen.blit(inventory_font.render(f"Fishdex progression: {player.unique_fish_caught}/25", False, "yellow"), (175,107))
+
+            fish_per_page = 4
+            start = player.fishdex_page*fish_per_page #0X4 is still 0, so the start is page 0
+            end = start+fish_per_page
+            visible_fish = fishdex_list[start:end]
+
+            box_locations = [(210,165),(650,165),(210,395),(650,395)]
+            for i in range(len(visible_fish)):
+                fish=visible_fish[i]
+                box_x, box_y = box_locations[i]
+                pygame.draw.rect(screen, "black", (box_x, box_y, 384,200),3)
+
+                if fish.caught_before:
+                    sprite_rect = fish.ui_sprite.get_rect(center=(box_x+64, box_y+50))
+                    screen.blit(fish.ui_sprite,sprite_rect)
+
+                    screen.blit(fishdex_font.render(fish.name, False, "yellow"), (box_x+10,box_y+100))
+                else:
+                    screen.blit(fishdex_font.render("Not caught", False, "grey"), (box_x+10, box_y+100))
+
+                screen.blit(fishdex_font.render(f"Rarity: {fish.rarity}", False, "white"), (box_x+10, box_y+125))
+
+                #change colour borders to red/green, add catch req, caught or not to red/green, name, rarity colouration, validation for going to far off page, Q mark replace sprite if not caught, comments on above
 
 
         elif in_shop_menu == True:
