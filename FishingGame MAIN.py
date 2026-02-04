@@ -101,6 +101,7 @@ def main_game(): #all game stuff goes in here
     last_weather_tick = pygame.time.get_ticks()
 
     day = True #sets time to day
+    prev_day = day
     last_clock_tick = pygame.time.get_ticks()
 
     Sunny_Sky_Day = pygame.image.load("Assets/Background stuff/background_day_sunny.png").convert_alpha()
@@ -199,14 +200,14 @@ def main_game(): #all game stuff goes in here
     D = False
 
     background_musics= [pygame.mixer.Sound("Assets/Background stuff/Dave the Diver OST - On the boat.mp3"), #0 Day Clear
-                        pygame.mixer.Sound("Assets/Background stuff/Star Wars - Kamino Theme.mp3"), #1 Day Rain
+                        pygame.mixer.Sound("Assets/Background stuff/Dave the Diver OST - The Blue Hole.mp3"), #1 Day Rain
                         pygame.mixer.Sound("Assets/Background stuff/C418 - Sweden - Minecraft Volume Alpha.mp3"), #2 Day Fog
                         pygame.mixer.Sound("Assets/Background stuff/Dave the Diver OST - Diver.mp3"), #3 Day Snow
                         pygame.mixer.Sound("Assets/Background stuff/Dave the Diver OST - Night Diving.mp3"), #4 Night Clear
-                        pygame.mixer.Sound("Assets/Background stuff/Dave the Diver OST - The Blue Hole.mp3"), #5 Night Rain
+                        pygame.mixer.Sound("Assets/Background stuff/Eterna Forest.mp3"), #5 Night Rain
                         pygame.mixer.Sound("Assets/Background stuff/Dave the Diver OST - Darker Trenches.mp3"), #6 Night Fog
                         pygame.mixer.Sound("Assets/Background stuff/Dave the Diver OST - Ice Level (Preserved Realm).mp3"), #7 Night Snow
-                        pygame.mixer.Sound("Assets/Shop/Shop music.mp3")] #8 shop music
+                        pygame.mixer.Sound("Assets/Shop/shop music.mp3")] #8 shop music
 
     for music in background_musics:
         music.set_volume(0.05) #sets each bg musics volume to 50%
@@ -223,8 +224,6 @@ def main_game(): #all game stuff goes in here
     Clock_font = pygame.font.Font("PressStart2P-Regular.ttf", 30)
     Weather_font = pygame.font.Font("PressStart2P-Regular.ttf", 20)
     Weather_font_colour = "aqua"
-    Fishdex_font = pygame.font.Font("PressStart2P-Regular.ttf", 21)
-    Fishdex_font1 = pygame.font.Font("PressStart2P-Regular.ttf", 15)
 
     minutes = [00, 10, 20, 30, 40, 50] #list of possible minutes the clock can display
     minute_hand = 00  # creates value for minute list above, starting at 00
@@ -331,7 +330,7 @@ def main_game(): #all game stuff goes in here
         def get_fishing_luck(player):
             return player.held_rod.luck + player.held_bait.luck #returns players total luck stat
 
-    player = Player(20000,0,Starter_rod,No_bait,0,50,50,0,0,0,"idle",False,40,310,345,0,random.randint(45,590),None,[],0,0,0,0) #instantiate object of class player
+    player = Player(0,0,Starter_rod,No_bait,0,50,100,0,0,0,"idle",False,40,310,345,0,random.randint(45,590),None,[],0,0,0,0) #instantiate object of class player
 
     def shop_next_rod(player):
         if player.held_rod.upgrade_index == None: #if the player has the starter rod
@@ -423,21 +422,21 @@ def main_game(): #all game stuff goes in here
     fishdex_list = All_Fish
 
     def retrieve_fish(player,current_weather,day):
-        roll = random.randint(260, 300) #chooses random num
+        roll = random.randint(1, 300) #chooses random num
         roll += player.get_fishing_luck() #combines it with player luck stat
 
         if roll > 300: #if too high
             roll = 300 #set to max
 
         #choose what rarity to return based off role
-        if roll <= 275:
-            rarity_index = 0 #common
-        elif roll <= 295:
-            rarity_index = 1 #rare
-        elif roll <= 299:
-            rarity_index = 2 #epic
+        if roll <= 180:
+            rarity_index = 0 #common (around 60%)
+        elif roll <= 270:
+            rarity_index = 1 #rare (around 30%)
+        elif roll <= 297:
+            rarity_index = 2 #epic (around 9%)
         else:
-            rarity_index = 3 #legendary
+            rarity_index = 3 #legendary (around 1%)
 
         rarity = ["Common", "Rare", "Epic", "Legendary"]
 
@@ -566,7 +565,11 @@ def main_game(): #all game stuff goes in here
 
     fishdex_menu = pygame.image.load("Assets/Menus/fishdex.png").convert_alpha()
     fishdex_open = False
-    fishdex_font = pygame.font.Font("PressStart2P-Regular.ttf",10)
+    Fishdex_counter_font = pygame.font.Font("PressStart2P-Regular.ttf", 21)
+    Fishdex_counter_font_side = pygame.font.Font("PressStart2P-Regular.ttf", 15)
+    Fishdex_font_big = pygame.font.Font("PressStart2P-Regular.ttf", 18)
+    Fishdex_font_small = pygame.font.Font("PressStart2P-Regular.ttf", 15)
+
 
 
 # MAIN GAME LOOP
@@ -595,17 +598,40 @@ def main_game(): #all game stuff goes in here
                 day = True
             else:
                 day = False
+            if day != prev_day: #if the time of day has swapped, update bg
+                if current_weather == "Clear":
+                    if day == True:
+                        weather_bg = Sunny_Sky_Day
+                    else:
+                        weather_bg = Clear_Sky_Night
+                if current_weather == "Rain":
+                    if day == True:
+                        weather_bg = Rainy_Sky_Day
+                    else:
+                        weather_bg = Rainy_Sky_Night
+                if current_weather == "Fog":
+                    if day == True:
+                        weather_bg = FogSnow_Sky_Day
+                    else:
+                        weather_bg = FogSnow_Sky_Night
+                if current_weather == "Snow":
+                    if day == True:
+                        weather_bg = FogSnow_Sky_Day
+                    else:
+                        weather_bg = FogSnow_Sky_Night
+
 
         if current_time - last_weather_tick >= weather_duration: #if the time passed is equal to the random weather duration
             last_weather_tick = current_time #resets timer
             weather_duration = random.randint(1800,4200)  # creates the new weather duration variable between 3 (180000)and 7 (420000) minutes
-            new_weather = random.choice(weather_list)
+            new_weather = random.choice(weather_list) #chooses new weather
+            while new_weather == current_weather: #if it is the same
+                new_weather=random.choice(weather_list) #choose again
+            current_weather = new_weather #set current weather
+
             fog = False
             rain = False
             snow = False
-            while new_weather == current_weather: #checks if the weather has changed
-                new_weather = random.choice(weather_list) #if it hasn't, it reselects again
-            current_weather = new_weather #updates weather
 
             if current_weather == "Clear": #updating background
                 if day == True: #if its day, set sprites to daytime variation
@@ -753,7 +779,7 @@ def main_game(): #all game stuff goes in here
                         if (player.inventory_page+1)*9<len(inventory_summary_list): #if there are fish on the next page
                             player.inventory_page+=1 #go to next page
                     if fishdex_open == True:
-                        if (player.fishdex_page+1)*3<len(All_Fish):
+                        if (player.fishdex_page+1)<7: #if they are trying to click on empty page
                             player.fishdex_page+=1
 
         key = pygame.key.get_pressed() #records the keyboard/mouse for any inputs
@@ -907,32 +933,55 @@ def main_game(): #all game stuff goes in here
                 text_y_pos+=50 #for the next fish, blit info 50 pixels down
 
         elif fishdex_open == True:
-            screen.blit(dim_overlay, (0,0))
-            screen.blit(fishdex_menu,(160,90))
-            screen.blit(inventory_font.render(f"Fishdex progression: {player.unique_fish_caught}/25", False, "yellow"), (175,107))
+            screen.blit(dim_overlay, (0,0)) #dims screen
+            screen.blit(fishdex_menu,(160,90)) #displays fishdex menu
+            screen.blit(inventory_font.render(f"Fishdex progression: {player.unique_fish_caught}/25", False, "yellow"), (175,107)) #shows progression as text
 
-            fish_per_page = 4
-            start = player.fishdex_page*fish_per_page #0X4 is still 0, so the start is page 0
-            end = start+fish_per_page
-            visible_fish = fishdex_list[start:end]
+            fish_per_page = 4 #sets amount of fish per page to 4
+            start = player.fishdex_page*fish_per_page #first fish index for this page
+            end = start+fish_per_page #last fish index for this page
+            visible_fish = fishdex_list[start:end] #the 4 fish to display on this page
 
-            box_locations = [(210,165),(650,165),(210,395),(650,395)]
-            for i in range(len(visible_fish)):
-                fish=visible_fish[i]
-                box_x, box_y = box_locations[i]
-                pygame.draw.rect(screen, "black", (box_x, box_y, 384,200),3)
+            box_locations = [(210,165),(650,165),(210,395),(650,395)] #positions of the fish boxes
+            for i in range(len(visible_fish)): #loop through the 4 fish to display on this page
+                fish=visible_fish[i] #get current fish
+                box_x, box_y = box_locations[i] #get box position
+                pygame.draw.rect(screen, "black", (box_x, box_y, 384,200),6) #draw box fish border (black, coordinates, width/height, thickness)
 
-                if fish.caught_before:
-                    sprite_rect = fish.ui_sprite.get_rect(center=(box_x+64, box_y+50))
+                if fish.caught_before: #if the fish has been caught
+                    sprite_rect = fish.ui_sprite.get_rect(center=(box_x+185, box_y+50)) #display its sprite
+                    weather_text = ", ".join(fish.weather) #sets weather to a string instead of list to print
+
+                    if fish.time == {True}: #sets time text to show day/night intead of True/False
+                        time_text = "Day"
+                    elif fish.time == {False}:
+                        time_text = "Night"
+                    else:
+                        time_text = "Day and Night"
+
+                    if fish.rarity == "Common": #sets rarity text to colour associated with rarity
+                        colour = "grey"
+                    elif fish.rarity == "Rare":
+                        colour = "blue"
+                    elif fish.rarity == "Epic":
+                        colour = "purple"
+                    elif fish.rarity == "Legendary":
+                        colour = "orange"
+
+                    #shows fish details
                     screen.blit(fish.ui_sprite,sprite_rect)
+                    screen.blit(Fishdex_font_small.render(fish.name, False, "yellow"), (box_x+10,box_y+100))
+                    screen.blit(Fishdex_font_small.render(f"Rarity: {fish.rarity}", False, colour), (box_x + 10, box_y + 125))
+                    screen.blit(Fishdex_font_small.render(f"Weather req: {weather_text}", False, "yellow"), (box_x+10,box_y+150))
+                    screen.blit(Fishdex_font_small.render(f"Time req: {time_text}", False, "yellow"), (box_x+10, box_y+175))
 
-                    screen.blit(fishdex_font.render(fish.name, False, "yellow"), (box_x+10,box_y+100))
+                #shows hidden fish details if they have not caught it
                 else:
-                    screen.blit(fishdex_font.render("Not caught", False, "grey"), (box_x+10, box_y+100))
-
-                screen.blit(fishdex_font.render(f"Rarity: {fish.rarity}", False, "white"), (box_x+10, box_y+125))
-
-                #change colour borders to red/green, add catch req, caught or not to red/green, name, rarity colouration, validation for going to far off page, Q mark replace sprite if not caught, comments on above
+                    screen.blit(Fishdex_font_big.render("?", False, "grey"), (box_x+185,box_y+50))
+                    screen.blit(Fishdex_font_small.render("Not caught", False, "red"), (box_x+10,box_y+100))
+                    screen.blit(Fishdex_font_small.render("Rarity: ???", False, "white"), (box_x+10,box_y+125))
+                    screen.blit(Fishdex_font_small.render("Weather req: ???", False, "white"), (box_x + 10,box_y + 150))
+                    screen.blit(Fishdex_font_small.render("Time req: ???", False, "white"), (box_x + 10,box_y + 175))
 
 
         elif in_shop_menu == True:
@@ -1020,14 +1069,13 @@ def main_game(): #all game stuff goes in here
             screen.blit(Weather_font.render(current_weather, False, Weather_font_colour), (1105, 97))
 
             screen.blit(board,(1080,145)) #third top right (fishdex)
-            screen.blit(Fishdex_font.render(f"{player.unique_fish_caught}/25", False, "yellow"),(1088,167))
-            screen.blit(Fishdex_font1.render("Fish", False, "yellow"), (1179, 160))
-            screen.blit(Fishdex_font1.render("Caught", False, "yellow"), (1179,178))
+            screen.blit(Fishdex_counter_font.render(f"{player.unique_fish_caught}/25", False, "yellow"),(1088,167))
+            screen.blit(Fishdex_counter_font_side.render("Fish", False, "yellow"), (1179, 160))
+            screen.blit(Fishdex_counter_font_side.render("Caught", False, "yellow"), (1179,178))
 
         #these are out of the loop so they are always displayed, even if in shop/inv GUI
         screen.blit(board,(10,5)) #top left (money)
-        screen.blit(Money_font.render("Money:", False, "yellow"), (20, 12))
-        screen.blit(Money_font.render(f"£{player.money}", False, "yellow"), (20, 42))
+        screen.blit(Money_font.render(f"{player.money} gold", False, "yellow"), (20, 30))
         screen.blit(hotbar,(576,650)) #bottom middle (hotbar)
         screen.blit(player.held_rod.sprite, (590,665))
         screen.blit(player.held_bait.sprite, (650, 665))
