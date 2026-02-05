@@ -570,530 +570,546 @@ def main_game(): #all game stuff goes in here
     Fishdex_font_big = pygame.font.Font("PressStart2P-Regular.ttf", 18)
     Fishdex_font_small = pygame.font.Font("PressStart2P-Regular.ttf", 15)
 
+    paused = False
+    big_pause_font = pygame.font.Font("PressStart2P-Regular.ttf", 50)
+    dim_overlay_pause = pygame.Surface((1280, 720))  # creates a new screen the size of the window
+    dim_overlay_pause.set_alpha(200)  # sets transparency of the new screen
+    dim_overlay_pause.fill((0, 0, 0))
+
 
 
 # MAIN GAME LOOP
     while game_running:
 
-# Weather and time
-        current_time = pygame.time.get_ticks() #gets current game tick
-
-        if current_time - last_clock_tick >= clock_tick_length: #if enough time has passed
-            last_clock_tick = current_time #resets timer
-
-            minute_hand +=1 #update minute hand every 8.33s
-
-            if minute_hand > 5: #if an ingame hour has passed..
-                minute_hand = 00
-                minute_display = str(minutes[minute_hand]) #displays clocks minutes as the location of the item in the minutes list based off the minute_hand variable
-                hour_hand +=1 #updates hour
-
-                if hour_hand > 23: #if midnight
-                    hour_hand = 00 #resets hour count
-
-            minute_display = str(minutes[minute_hand]) #displays clock minutes
-            hour_display = str(hour_hand) #displays clock hour
-
-            if 6<= hour_hand < 18: #if between 6am and 6pm, day is true
-                day = True
-            else:
-                day = False
-            if day != prev_day: #if the time of day has swapped, update bg
-                if current_weather == "Clear":
-                    if day == True:
-                        weather_bg = Sunny_Sky_Day
-                    else:
-                        weather_bg = Clear_Sky_Night
-                if current_weather == "Rain":
-                    if day == True:
-                        weather_bg = Rainy_Sky_Day
-                    else:
-                        weather_bg = Rainy_Sky_Night
-                if current_weather == "Fog":
-                    if day == True:
-                        weather_bg = FogSnow_Sky_Day
-                    else:
-                        weather_bg = FogSnow_Sky_Night
-                if current_weather == "Snow":
-                    if day == True:
-                        weather_bg = FogSnow_Sky_Day
-                    else:
-                        weather_bg = FogSnow_Sky_Night
-
-
-        if current_time - last_weather_tick >= weather_duration: #if the time passed is equal to the random weather duration
-            last_weather_tick = current_time #resets timer
-            weather_duration = random.randint(1800,4200)  # creates the new weather duration variable between 3 (180000)and 7 (420000) minutes
-            new_weather = random.choice(weather_list) #chooses new weather
-            while new_weather == current_weather: #if it is the same
-                new_weather=random.choice(weather_list) #choose again
-            current_weather = new_weather #set current weather
-
-            fog = False
-            rain = False
-            snow = False
-
-            if current_weather == "Clear": #updating background
-                if day == True: #if its day, set sprites to daytime variation
-                    weather_bg = Sunny_Sky_Day
-                    cloud1 = cloud_sunny_1
-                    cloud2 = cloud_sunny_2
-                    cloud3 = cloud_sunny_3
-                    new_background_music_index = 0 #sets new bg music
-                    Weather_font_colour = "aqua" #sets weather display GUI font colour to aqua
-                else:
-                    weather_bg = Clear_Sky_Night #else its night, updates sprites to nighttime variation
-                    cloud1 = cloud_sunny_1
-                    cloud2 = cloud_sunny_2
-                    cloud3 = cloud_sunny_3
-                    new_background_music_index = 4
-                    Weather_font_colour = "aqua"
-
-            elif current_weather == "Rain":
-                if day == True:
-                    weather_bg = Rainy_Sky_Day
-                    cloud1 = cloud_rainy_1
-                    cloud2 = cloud_rainy_2
-                    cloud3 = cloud_rainy_3
-                    rain = True
-                    new_background_music_index = 1
-                    Weather_font_colour = "dodgerblue"
-                else:
-                    weather_bg = Rainy_Sky_Night
-                    cloud1 = cloud_rainy_1
-                    cloud2 = cloud_rainy_2
-                    cloud3 = cloud_rainy_3
-                    rain = True
-                    new_background_music_index = 5
-                    Weather_font_colour = "dodgerblue"
-
-            elif current_weather == "Fog":
-                if day == True:
-                    weather_bg = FogSnow_Sky_Day
-                    fog = True
-                    new_background_music_index = 2
-                    Weather_font_colour = "azure3"
-                else:
-                    weather_bg = FogSnow_Sky_Night
-                    fog = True
-                    new_background_music_index = 6
-                    Weather_font_colour = "azure3"
-
-            elif current_weather == "Snow":
-                if day == True:
-                    weather_bg = FogSnow_Sky_Day
-                    snow = True
-                    new_background_music_index = 3
-                    Weather_font_colour = "azure"
-                else:
-                    weather_bg = FogSnow_Sky_Night
-                    snow = True
-                    new_background_music_index = 7
-                    Weather_font_colour = "azure"
-
-
-        if in_shop == True: #if in shop
-            screen.blit(shop_bg,(0,0)) #display shop bg
-            screen.blit(npc_left,(900,385)) #display npc
-        else:
-            screen.blit(weather_bg, (0, 0)) #if outside, show outside stuff
-            screen.blit(Foreground,(0,0))
-
-        if in_shop == False: #if the player is outside
-            if current_weather == "Clear" or current_weather == "Rain":
-                screen.blit(cloud1,(cloud_1_x,cloud_1_y))  # displays cloud
-                cloud_1_x += 1  # moves cloud 1 pixel left
-                if cloud_1_x >= 1280:  # checks to see if cloud to far right off-screen
-                    cloud_1_x = 0  # moves cloud back to the start
-            if current_weather == "Clear" or current_weather == "Rain":
-                screen.blit(cloud2,(cloud_2_x,cloud_2_y))
-                cloud_2_x += 0.4
-                if cloud_2_x >= 1280:
-                    cloud_2_x = 0
-            if current_weather == "Clear" or current_weather == "Rain":
-                screen.blit(cloud3,(cloud_3_x,cloud_3_y))
-                cloud_3_x += 0.8
-                if cloud_3_x >= 1280:
-                    cloud_3_x = 0
-            if fog == True:
-                screen.blit(fog_particle,(0,0))
-            if rain == True:
-                for drop in rain_drops: #for each active rain drop
-                    drop.precipitate() #move it
-                    drop.display() #display it
-            if snow == True:
-                for snow_drop in snow_drops:
-                    snow_drop.snow_precipitate()
-                    snow_drop.snow_display()
-
-            if new_background_music_index != current_background_music_index: #switch music only if it has changed
-                if current_background_music != None:
-                    current_background_music = current_background_music.fadeout(3000) #fade out current bg music for 3s
-
-                current_background_music = background_musics[new_background_music_index] #selects music
-                current_background_music.play(-1) #play new music
-                current_background_music_index = new_background_music_index #updates tracker
-        else: #if in shop
-            if current_background_music_index != 8:
-                if current_background_music != None:
-                    current_background_music.fadeout(3000)
-
-                current_background_music = background_musics[8] #set music
-                current_background_music.play(-1) #play shop music
-                current_background_music_index = 8 #update tracker
-
-
-# Player movement and input
-
-        for event in pygame.event.get(): #handles quitting and debug code
+        for event in pygame.event.get():  # handles quitting and debug code
             if event.type == pygame.MOUSEBUTTONDOWN:
                 menu_mouse_pos_test = pygame.mouse.get_pos()
-                print("Mouse clicked at",menu_mouse_pos_test)
+                print("Mouse clicked at", menu_mouse_pos_test)
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    paused = not paused
+                if paused == False: #if the game is not paused, reset vol and look for inputs
+                    current_background_music.set_volume(0.05)
+                    if event.key == pygame.K_e: #if its e
+                        inventory_open = not inventory_open #flips state of inventory_open
+                        if inventory_open == True: #if it is true
+                            player.inventory_page = 0 #page inv on is the first one
+                    if event.key == pygame.K_f:
+                        fishdex_open = not fishdex_open
+                        if fishdex_open == True:
+                            player.fishdex_page = 0
+                else: #if game is paused:
+                    current_background_music.set_volume(0.00) #set music to silent
+                    screen.blit(dim_overlay_pause, (0, 0))
+                    screen.blit(big_pause_font.render("PAUSED", False, "red"), (500,100))
 
-            if event.type == pygame.KEYDOWN: #if a key is pressed
-                if event.key == pygame.K_e: #if its e
-                    inventory_open = not inventory_open #flips state of inventory_open
-                    if inventory_open == True: #if it is true
-                        player.inventory_page = 0 #page inv on is the first one
-                if event.key == pygame.K_f:
-                    fishdex_open = not fishdex_open
-                    if fishdex_open == True:
-                        player.fishdex_page = 0
-
-            if event.type == pygame.MOUSEBUTTONDOWN and (inventory_open == True or fishdex_open == True):  # if mouse clicked and either the fishdex or inventory is open
+            if event.type == pygame.MOUSEBUTTONDOWN and (
+                    inventory_open == True or fishdex_open == True):  # if mouse clicked and either the fishdex or inventory is open
                 x, y = pygame.mouse.get_pos()
-                if 1075<=x<=1110 and 100<=y<=130: #if near the X button
-                    inventory_open = False #inv is closed
+                if 1075 <= x <= 1110 and 100 <= y <= 130:  # if near the X button
+                    inventory_open = False  # inv is closed
                     fishdex_open = False
-                if 1075<=x<=1110 and 135<=y<=170: #if click on up arrow
-                    if player.inventory_page>0: #prevent going on a page smaller than 0
-                        player.inventory_page-=1 #go up a page
-                    if player.fishdex_page>0:
-                        player.fishdex_page-=1
+                if 1075 <= x <= 1110 and 135 <= y <= 170:  # if click on up arrow
+                    if player.inventory_page > 0:  # prevent going on a page smaller than 0
+                        player.inventory_page -= 1  # go up a page
+                    if player.fishdex_page > 0:
+                        player.fishdex_page -= 1
 
-                if  1075 <=x<=1110 and 585<=y<=620: #if click on down arrow
+                if 1075 <= x <= 1110 and 585 <= y <= 620:  # if click on down arrow
                     if inventory_open == True:
-                        if (player.inventory_page+1)*9<len(inventory_summary_list): #if there are fish on the next page
-                            player.inventory_page+=1 #go to next page
+                        if (player.inventory_page + 1) * 9 < len(inventory_summary_list):  # if there are fish on the next page
+                            player.inventory_page += 1  # go to next page
                     if fishdex_open == True:
-                        if (player.fishdex_page+1)<7: #if they are trying to click on empty page
-                            player.fishdex_page+=1
+                        if (player.fishdex_page + 1) < 7:  # if they are trying to click on empty page
+                            player.fishdex_page += 1
 
-        key = pygame.key.get_pressed() #records the keyboard/mouse for any inputs
+        if not paused:
 
-        show_space = False #instantiate variable for displaying interact indicator
-        moving = False #checks if moving
+    # Weather and time
+            current_time = pygame.time.get_ticks() #gets current game tick
 
-        if player.cast == False:
-            if key[pygame.K_a]: #if pressing a
-                moving = True #player is moving
+            if current_time - last_clock_tick >= clock_tick_length: #if enough time has passed
+                last_clock_tick = current_time #resets timer
 
-                if D == True: #if switching from right to left
-                    player_sprite_count = 5 #update sprite count to left facing
-                    D = False #no longer moving right
+                minute_hand +=1 #update minute hand every 8.33s
 
-                animation_timer +=1 #logic for updating sprite animation
-                if animation_timer > animation_speed: #if enough frames have passed to warrant a change in sprite
-                    player_sprite_count +=1 #update sprite
-                    animation_timer = 0 #reset frame timer
+                if minute_hand > 5: #if an ingame hour has passed..
+                    minute_hand = 00
+                    minute_display = str(minutes[minute_hand]) #displays clocks minutes as the location of the item in the minutes list based off the minute_hand variable
+                    hour_hand +=1 #updates hour
 
-                player_x_coordinate -= player_speed #move player
+                    if hour_hand > 23: #if midnight
+                        hour_hand = 00 #resets hour count
 
-                if player_x_coordinate < -30: #if too far left
-                    player_x_coordinate += player_speed #move player back
+                minute_display = str(minutes[minute_hand]) #displays clock minutes
+                hour_display = str(hour_hand) #displays clock hour
 
-                if player_sprite_count > 9: #if end of animation cycle
-                    player_sprite_count = 6 #set sprite back
-
-            elif key[pygame.K_d]:
-                moving = True
-                D = True #moving right
-
-                animation_timer += 1 #logic for updating sprite animation
-                if animation_timer > animation_speed:
-                    player_sprite_count += 1
-                    animation_timer = 0
-
-                player_x_coordinate += player_speed #move player
-
-                if in_shop == False: #if outside
-                    if player_x_coordinate>640: #if at end of pier
-                        player_x_coordinate -= player_speed #move player back
-                elif in_shop == True: #if inside
-                    if player_x_coordinate > 560: #if at store counter
-                        player_x_coordinate -= player_speed #move player back
-
-                if player_sprite_count > 4: #if end of animation cycle
-                    player_sprite_count = 0
-
-
-            elif key[pygame.K_SPACE]:
-                if in_shop == False:
-                    if 170 <= player_x_coordinate <= 260: #if not in shop and near door
-                        fadeout(fadespeed=1) #fadeout animation
-                        in_shop = True #activates code for in shop
-                    elif player_x_coordinate >= 550:  # if player is near the end of the pier
-                        if player.weight <= player.max_weight: #if player has inv space
-                            player.cast = True
-                            player.fish_state = "waiting"
-                            player.fish_start_time = pygame.time.get_ticks() #gets time
-                            player.wait_time = random.randint(11000-player.held_rod.fishing_speed, 11001) #calculates how long player has to wait for fish, based off fishing speed
-                            player.fish_move_speed = random.randint(1,5)  # sets move speed to be random every time it changes direction
-                            player.fish_target = random.randint(45, 590)  # sets fish's new location to start moving to
-                            player.fish_progress = 200  # resets progress
-                            player.fish_height = 345  # resets fishes height to center
-                            player.bar_height = 310  # resets bar to center
+                if 6<= hour_hand < 18: #if between 6am and 6pm, day is true
+                    day = True
+                else:
+                    day = False
+                if day != prev_day: #if the time of day has swapped, update bg
+                    if current_weather == "Clear":
+                        if day == True:
+                            weather_bg = Sunny_Sky_Day
                         else:
-                            screen.blit(max_weight_font.render("Max weight reached!",False,"Red"),(player_x_coordinate+200,300))
-
-                elif in_shop == True:
-                    if 100 <= player_x_coordinate <= 300: #if in shop and near door
-                        fadeout(fadespeed=1)
-                        in_shop = False #exits shop
-                    elif 500 <= player_x_coordinate <= 700:
-                        in_shop_menu = True #activates menu
-
-
-        if moving == False: #if stationary
-            if 1<= player_sprite_count <= 4: #if last facing right
-                player_sprite_count = 0 #set to stationary right sprite
-            elif 6 <= player_sprite_count <= 9: #opposite to above
-                player_sprite_count = 5
-
-        if in_shop == False:
-            if 170 <= player_x_coordinate <= 260:
-                show_space = True #if outside and near door, show space indicator
-            elif player_x_coordinate >= 550:  # if player is near the end of the pier
-                show_space = True
-        elif in_shop == True:
-            if 100 <= player_x_coordinate <= 300:
-                show_space = True #if inside and near door, show space indicator
-            elif 500 <= player_x_coordinate <= 700:
-                show_space = True #if inside and near counter, show space indicator
+                            weather_bg = Clear_Sky_Night
+                    if current_weather == "Rain":
+                        if day == True:
+                            weather_bg = Rainy_Sky_Day
+                        else:
+                            weather_bg = Rainy_Sky_Night
+                    if current_weather == "Fog":
+                        if day == True:
+                            weather_bg = FogSnow_Sky_Day
+                        else:
+                            weather_bg = FogSnow_Sky_Night
+                    if current_weather == "Snow":
+                        if day == True:
+                            weather_bg = FogSnow_Sky_Day
+                        else:
+                            weather_bg = FogSnow_Sky_Night
 
 
-        if in_shop == False:
-            player_y_coordinate = 265
-            if player.cast == False:
-                screen.blit(player_sprites[player_sprite_count],(player_x_coordinate,player_y_coordinate)) #displays sprite
+            if current_time - last_weather_tick >= weather_duration: #if the time passed is equal to the random weather duration
+                last_weather_tick = current_time #resets timer
+                weather_duration = random.randint(1800,4200)  # creates the new weather duration variable between 3 (180000)and 7 (420000) minutes
+                new_weather = random.choice(weather_list) #chooses new weather
+                while new_weather == current_weather: #if it is the same
+                    new_weather=random.choice(weather_list) #choose again
+                current_weather = new_weather #set current weather
 
-            else:
-                screen.blit(player_sprites[10], (player_x_coordinate, player_y_coordinate)) #displays sprite with hand held out
-                screen.blit(player.held_rod.hand_sprite,(player_x_coordinate+100,280))
-                screen.blit(bobber,(player_x_coordinate+158,285))
-                fishing_minigame(player)
+                fog = False
+                rain = False
+                snow = False
 
-        else:
-            player_y_coordinate = 395
-            screen.blit(player_sprites_scaled[player_sprite_count],(player_x_coordinate,player_y_coordinate)) #displays sprite but scaled up a bit and y changed
-
-        if show_space == True: #if near interactable area
-            if in_shop == False:
-                screen.blit(space, (player_x_coordinate-70,player_y_coordinate)) #displays space indicator near player
-            else:
-                screen.blit(space,(player_x_coordinate + 200, player_y_coordinate))  # displays space indicator near player
-
-
-# Inventory/GUI
-
-        if inventory_open == True:
-            screen.blit(dim_overlay, (0, 0)) #puts the faded new screen to make the background darker to bring more contrast to inv
-
-            #displays inv and text
-            screen.blit(inventory,(160,90))
-            screen.blit(inventory_font.render(f"Money: £{player.money}", False, "yellow"), (175,107))
-            screen.blit(inventory_font.render(f"Weight: {player.weight:.0f}kg", False, "yellow"), (480,107))
-            screen.blit(inventory_font.render("Fishdex:", False, "yellow"), (780,107))
-            screen.blit(inventory_font.render("Fish:", False, "yellow"), (175,145))
-            screen.blit(inventory_font.render("Quantity:", False, "yellow"), (480,145))
-            screen.blit(inventory_font.render("Sell Price:", False, "yellow"), (780, 145))
-
-            inventory_summary = {} #creates emtpy dictionary
-            for fish in player.inventory: #for each fish inside the players inv
-                if fish.name not in inventory_summary: #if fish's name isnt in it
-                    inventory_summary[fish.name] = {"fish":fish, "quantity":1} #add it with a quantity of 1
-                else:
-                    inventory_summary[fish.name]["quantity"]+=1 #otherwise add another to the quantity
-
-            inventory_summary_list = list(inventory_summary.values()) #.values() returns just values of the item, list() converts the dictionary into a normal list
-            #calculates what fish to show
-            start = player.inventory_page*9 #calculate starting index
-            end = start+9 #calculate ending index
-            visible_fish = inventory_summary_list[start:end] #take only fish entries from current page
-            text_y_pos = 185
-            for entry in visible_fish: #for each fish in the fish that will be displayed
-                fish = entry["fish"] #get fish object from entry dictionary
-                quantity = entry["quantity"] #how many fish of this name does the player own?
-                total_price = fish.sell_price*quantity #how much does it all sell for?
-                screen.blit(inventory_font.render(f"{fish.name}   x{quantity}", False, "yellow"), (175,text_y_pos)) #show stats
-                screen.blit(inventory_font.render(f"{total_price}", False, "yellow"), (775,text_y_pos))
-                text_y_pos+=50 #for the next fish, blit info 50 pixels down
-
-        elif fishdex_open == True:
-            screen.blit(dim_overlay, (0,0)) #dims screen
-            screen.blit(fishdex_menu,(160,90)) #displays fishdex menu
-            screen.blit(inventory_font.render(f"Fishdex progression: {player.unique_fish_caught}/25", False, "yellow"), (175,107)) #shows progression as text
-
-            fish_per_page = 4 #sets amount of fish per page to 4
-            start = player.fishdex_page*fish_per_page #first fish index for this page
-            end = start+fish_per_page #last fish index for this page
-            visible_fish = fishdex_list[start:end] #the 4 fish to display on this page
-
-            box_locations = [(210,165),(650,165),(210,395),(650,395)] #positions of the fish boxes
-            for i in range(len(visible_fish)): #loop through the 4 fish to display on this page
-                fish=visible_fish[i] #get current fish
-                box_x, box_y = box_locations[i] #get box position
-                pygame.draw.rect(screen, "black", (box_x, box_y, 384,200),6) #draw box fish border (black, coordinates, width/height, thickness)
-
-                if fish.caught_before: #if the fish has been caught
-                    sprite_rect = fish.ui_sprite.get_rect(center=(box_x+185, box_y+50)) #display its sprite
-                    weather_text = ", ".join(fish.weather) #sets weather to a string instead of list to print
-
-                    if fish.time == {True}: #sets time text to show day/night intead of True/False
-                        time_text = "Day"
-                    elif fish.time == {False}:
-                        time_text = "Night"
+                if current_weather == "Clear": #updating background
+                    if day == True: #if its day, set sprites to daytime variation
+                        weather_bg = Sunny_Sky_Day
+                        cloud1 = cloud_sunny_1
+                        cloud2 = cloud_sunny_2
+                        cloud3 = cloud_sunny_3
+                        new_background_music_index = 0 #sets new bg music
+                        Weather_font_colour = "aqua" #sets weather display GUI font colour to aqua
                     else:
-                        time_text = "Day and Night"
+                        weather_bg = Clear_Sky_Night #else its night, updates sprites to nighttime variation
+                        cloud1 = cloud_sunny_1
+                        cloud2 = cloud_sunny_2
+                        cloud3 = cloud_sunny_3
+                        new_background_music_index = 4
+                        Weather_font_colour = "aqua"
 
-                    if fish.rarity == "Common": #sets rarity text to colour associated with rarity
-                        colour = "grey"
-                    elif fish.rarity == "Rare":
-                        colour = "blue"
-                    elif fish.rarity == "Epic":
-                        colour = "purple"
-                    elif fish.rarity == "Legendary":
-                        colour = "orange"
+                elif current_weather == "Rain":
+                    if day == True:
+                        weather_bg = Rainy_Sky_Day
+                        cloud1 = cloud_rainy_1
+                        cloud2 = cloud_rainy_2
+                        cloud3 = cloud_rainy_3
+                        rain = True
+                        new_background_music_index = 1
+                        Weather_font_colour = "dodgerblue"
+                    else:
+                        weather_bg = Rainy_Sky_Night
+                        cloud1 = cloud_rainy_1
+                        cloud2 = cloud_rainy_2
+                        cloud3 = cloud_rainy_3
+                        rain = True
+                        new_background_music_index = 5
+                        Weather_font_colour = "dodgerblue"
 
-                    #shows fish details
-                    screen.blit(fish.ui_sprite,sprite_rect)
-                    screen.blit(Fishdex_font_small.render(fish.name, False, "yellow"), (box_x+10,box_y+100))
-                    screen.blit(Fishdex_font_small.render(f"Rarity: {fish.rarity}", False, colour), (box_x + 10, box_y + 125))
-                    screen.blit(Fishdex_font_small.render(f"Weather req: {weather_text}", False, "yellow"), (box_x+10,box_y+150))
-                    screen.blit(Fishdex_font_small.render(f"Time req: {time_text}", False, "yellow"), (box_x+10, box_y+175))
+                elif current_weather == "Fog":
+                    if day == True:
+                        weather_bg = FogSnow_Sky_Day
+                        fog = True
+                        new_background_music_index = 2
+                        Weather_font_colour = "azure3"
+                    else:
+                        weather_bg = FogSnow_Sky_Night
+                        fog = True
+                        new_background_music_index = 6
+                        Weather_font_colour = "azure3"
 
-                #shows hidden fish details if they have not caught it
-                else:
-                    screen.blit(Fishdex_font_big.render("?", False, "grey"), (box_x+185,box_y+50))
-                    screen.blit(Fishdex_font_small.render("Not caught", False, "red"), (box_x+10,box_y+100))
-                    screen.blit(Fishdex_font_small.render("Rarity: ???", False, "white"), (box_x+10,box_y+125))
-                    screen.blit(Fishdex_font_small.render("Weather req: ???", False, "white"), (box_x + 10,box_y + 150))
-                    screen.blit(Fishdex_font_small.render("Time req: ???", False, "white"), (box_x + 10,box_y + 175))
-
-
-        elif in_shop_menu == True:
-            screen.blit(dim_overlay,(0,0)) #displays gui stuff
-            screen.blit(shop_menu,(160,90))
-            screen.blit(back_sell_button,(25,645))
-            screen.blit(back_sell_button,(1160,645))
-            screen.blit(back_sell_font.render("Back",False,"red"), (30,656))
-            screen.blit(back_sell_font.render("Sell",False,"green"), (1165,656))
-
-            next_rod = shop_next_rod(player) #figures out which rod is the next to be bought with the subroutines outside the while loop
-
-            shop_mouse_pos = pygame.mouse.get_pos() #get mouse pos
-            x, y = shop_mouse_pos
-
-            if next_rod != None: #if they can get a new rod
-                screen.blit(next_rod.sprite, (200,150)) #show next rod's sprite, name and cost
-                screen.blit(shop_upgrade_font.render(next_rod.name, False, "Black"),(270,155))
-                screen.blit(shop_upgrade_font.render(f"Cost: {next_rod.cost}",False, "Black"), (700,155))
-
-            screen.blit(Worm_bait.sprite, (185,410)) #displays all bait sprites, names and costs
-            screen.blit(shop_bait_font.render(Worm_bait.name, False, "Black"), (240,400))
-            screen.blit(shop_bait_font.render(f"Cost: {Worm_bait.cost}",False, "Black"), (240,430))
-            screen.blit(Glow_bait.sprite, (670,410))
-            screen.blit(shop_bait_font.render(Glow_bait.name, False, "Black"), (725, 400))
-            screen.blit(shop_bait_font.render(f"Cost: {Glow_bait.cost}", False, "Black"), (725, 430))
-            screen.blit(Chum_bait.sprite, (190,550))
-            screen.blit(shop_bait_font.render(Chum_bait.name, False, "Black"), (245,540))
-            screen.blit(shop_bait_font.render(f"Cost: {Chum_bait.cost}", False, "Black"), (245,570))
-            screen.blit(Rainbow_bait.sprite, (670,550))
-            screen.blit(shop_bait_font.render(Rainbow_bait.name, False, "Black"), (725,540))
-            screen.blit(shop_bait_font.render(f"Cost: {Rainbow_bait.cost}", False, "Black"), (725,570))
-            screen.blit(weight_shop_sprite, (200,275))
-            screen.blit(shop_upgrade_font.render("Max weight +10kg", False, "Black"), (270,280))
-            screen.blit(shop_upgrade_font.render(f"Cost: {player.weight_upgrade_cost}", False, "Black"), (700,280))
-
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if 30<=x<=110 and 650<=y<=690: #if press close button
-                    in_shop_menu = False #leave shop GUI
-                if 990<=x<=1100 and 130<=y<=190: #if press buy new rod button
-                    if can_buy == True:
-                        buy_next_rod(player)
-                        can_buy = False #stops player buying multiple rods each frame
-                if 990<=x<=1110 and 265<=y<=320: #if press buy max weight
-                    if can_buy == True:
-                        buy_next_weight(player)
-                        can_buy = False
-                if 515<=x<=625 and 400<=y<=455: #if buy worm bait
-                    if can_buy == True:
-                        buy_bait(player,Worm_bait)
-                        can_buy = False
-                if 990<=x<=1100 and 400<=y<=455: #if buy glow bait
-                    if can_buy == True:
-                        buy_bait(player, Glow_bait)
-                        can_buy = False
-                if 515<=x<=625 and 535<=y<=590: #if buy chum bait
-                    if can_buy == True:
-                        buy_bait(player, Chum_bait)
-                        can_buy = False
-                if 990<=x<=1100 and 535<=y<=590: #if buy rainbow bait
-                    if can_buy == True:
-                        buy_bait(player, Rainbow_bait)
-                        can_buy = False
-                if 1160<=x<=1250 and 645<=y<=690:
-                    for fish in player.inventory:
-                        player.money+=fish.sell_price
-                        player.weight = 0
-                    player.inventory.clear()
-
-            if event.type == pygame.MOUSEBUTTONUP: #if player lets go of mouse
-                can_buy = True #player can buy something again
+                elif current_weather == "Snow":
+                    if day == True:
+                        weather_bg = FogSnow_Sky_Day
+                        snow = True
+                        new_background_music_index = 3
+                        Weather_font_colour = "azure"
+                    else:
+                        weather_bg = FogSnow_Sky_Night
+                        snow = True
+                        new_background_music_index = 7
+                        Weather_font_colour = "azure"
 
 
-        else:
-            ingame_clock = str(hour_display).zfill(2)+":"+str(minute_display).zfill(2) #zfill if string is 1 character long it puts a 0 at the start of the string until is as long as parameter put in (2)
-
-            screen.blit(board,(1080,650)) #bottom right (weight)
-            screen.blit(Weight_font.render("Weight:", False, "yellow"), (1087, 657))
-            screen.blit(Weight_font.render(f"{player.weight:.0f}kg/{player.max_weight}kg", False, "yellow"), (1087, 687))
-
-            screen.blit(board,(1080,5)) #top right (time)
-            screen.blit(Clock_font.render(ingame_clock, False, "yellow"),(1100,25))
-
-            screen.blit(board,(1080,75)) #second top right (weather)
-            screen.blit(Weather_font.render(current_weather, False, Weather_font_colour), (1105, 97))
-
-            screen.blit(board,(1080,145)) #third top right (fishdex)
-            screen.blit(Fishdex_counter_font.render(f"{player.unique_fish_caught}/25", False, "yellow"),(1088,167))
-            screen.blit(Fishdex_counter_font_side.render("Fish", False, "yellow"), (1179, 160))
-            screen.blit(Fishdex_counter_font_side.render("Caught", False, "yellow"), (1179,178))
-
-        #these are out of the loop so they are always displayed, even if in shop/inv GUI
-        screen.blit(board,(10,5)) #top left (money)
-        screen.blit(Money_font.render(f"{player.money} gold", False, "yellow"), (20, 30))
-        screen.blit(hotbar,(576,650)) #bottom middle (hotbar)
-        screen.blit(player.held_rod.sprite, (590,665))
-        screen.blit(player.held_bait.sprite, (650, 665))
-        screen.blit(inv_bait_amount_font.render(f"{player.bait_amount}", False, "white"), (676,663))
-
-        if player.fish_state == "show_fish": #if player has caught a fish
-            current_time = pygame.time.get_ticks() #get time
-            if current_time - player.show_fish <10000: #for the next 5 seconds, show the fish sprite and name of the fish they caught
-                screen.blit(board,(10,656))
-
-                box_x, box_y = 15,656 #top left of 64x64 area
-                fish_sprite = player.caught_fish.ui_sprite #gets prescaled UI version of fish sprite
-                fish_rect = fish_sprite.get_rect(center=(box_x+32, box_y+32)) #create a rect for the sprite and center it inside the 64x64 box
-                screen.blit(fish_sprite,fish_rect) #draw at calculated position
-
-                screen.blit(fish_font.render(f"{player.caught_fish.name}",False,"yellow"), (80,680))
+            if in_shop == True: #if in shop
+                screen.blit(shop_bg,(0,0)) #display shop bg
+                screen.blit(npc_left,(900,385)) #display npc
             else:
-                player.fish_state = "idle"
+                screen.blit(weather_bg, (0, 0)) #if outside, show outside stuff
+                screen.blit(Foreground,(0,0))
+
+            if in_shop == False: #if the player is outside
+                if current_weather == "Clear" or current_weather == "Rain":
+                    screen.blit(cloud1,(cloud_1_x,cloud_1_y))  # displays cloud
+                    cloud_1_x += 1  # moves cloud 1 pixel left
+                    if cloud_1_x >= 1280:  # checks to see if cloud to far right off-screen
+                        cloud_1_x = 0  # moves cloud back to the start
+                if current_weather == "Clear" or current_weather == "Rain":
+                    screen.blit(cloud2,(cloud_2_x,cloud_2_y))
+                    cloud_2_x += 0.4
+                    if cloud_2_x >= 1280:
+                        cloud_2_x = 0
+                if current_weather == "Clear" or current_weather == "Rain":
+                    screen.blit(cloud3,(cloud_3_x,cloud_3_y))
+                    cloud_3_x += 0.8
+                    if cloud_3_x >= 1280:
+                        cloud_3_x = 0
+                if fog == True:
+                    screen.blit(fog_particle,(0,0))
+                if rain == True:
+                    for drop in rain_drops: #for each active rain drop
+                        drop.precipitate() #move it
+                        drop.display() #display it
+                if snow == True:
+                    for snow_drop in snow_drops:
+                        snow_drop.snow_precipitate()
+                        snow_drop.snow_display()
+
+                if new_background_music_index != current_background_music_index: #switch music only if it has changed
+                    if current_background_music != None:
+                        current_background_music = current_background_music.fadeout(3000) #fade out current bg music for 3s
+
+                    current_background_music = background_musics[new_background_music_index] #selects music
+                    current_background_music.play(-1) #play new music
+                    current_background_music_index = new_background_music_index #updates tracker
+            else: #if in shop
+                if current_background_music_index != 8:
+                    if current_background_music != None:
+                        current_background_music.fadeout(3000)
+
+                    current_background_music = background_musics[8] #set music
+                    current_background_music.play(-1) #play shop music
+                    current_background_music_index = 8 #update tracker
+
+
+    # Player movement and input
+
+            key = pygame.key.get_pressed() #records the keyboard/mouse for any inputs
+
+            show_space = False #instantiate variable for displaying interact indicator
+            moving = False #checks if moving
+
+            if player.cast == False:
+                if key[pygame.K_a]: #if pressing a
+                    moving = True #player is moving
+
+                    if D == True: #if switching from right to left
+                        player_sprite_count = 5 #update sprite count to left facing
+                        D = False #no longer moving right
+
+                    animation_timer +=1 #logic for updating sprite animation
+                    if animation_timer > animation_speed: #if enough frames have passed to warrant a change in sprite
+                        player_sprite_count +=1 #update sprite
+                        animation_timer = 0 #reset frame timer
+
+                    player_x_coordinate -= player_speed #move player
+
+                    if player_x_coordinate < -30: #if too far left
+                        player_x_coordinate += player_speed #move player back
+
+                    if player_sprite_count > 9: #if end of animation cycle
+                        player_sprite_count = 6 #set sprite back
+
+                elif key[pygame.K_d]:
+                    moving = True
+                    D = True #moving right
+
+                    animation_timer += 1 #logic for updating sprite animation
+                    if animation_timer > animation_speed:
+                        player_sprite_count += 1
+                        animation_timer = 0
+
+                    player_x_coordinate += player_speed #move player
+
+                    if in_shop == False: #if outside
+                        if player_x_coordinate>640: #if at end of pier
+                            player_x_coordinate -= player_speed #move player back
+                    elif in_shop == True: #if inside
+                        if player_x_coordinate > 560: #if at store counter
+                            player_x_coordinate -= player_speed #move player back
+
+                    if player_sprite_count > 4: #if end of animation cycle
+                        player_sprite_count = 0
+
+
+                elif key[pygame.K_SPACE]:
+                    if in_shop == False:
+                        if 170 <= player_x_coordinate <= 260: #if not in shop and near door
+                            fadeout(fadespeed=1) #fadeout animation
+                            in_shop = True #activates code for in shop
+                        elif player_x_coordinate >= 550:  # if player is near the end of the pier
+                            if player.weight <= player.max_weight: #if player has inv space
+                                player.cast = True
+                                player.fish_state = "waiting"
+                                player.fish_start_time = pygame.time.get_ticks() #gets time
+                                player.wait_time = random.randint(11000-player.held_rod.fishing_speed, 11001) #calculates how long player has to wait for fish, based off fishing speed
+                                player.fish_move_speed = random.randint(1,5)  # sets move speed to be random every time it changes direction
+                                player.fish_target = random.randint(45, 590)  # sets fish's new location to start moving to
+                                player.fish_progress = 200  # resets progress
+                                player.fish_height = 345  # resets fishes height to center
+                                player.bar_height = 310  # resets bar to center
+                            else:
+                                screen.blit(max_weight_font.render("Max weight reached!",False,"Red"),(player_x_coordinate+200,300))
+
+                    elif in_shop == True:
+                        if 100 <= player_x_coordinate <= 300: #if in shop and near door
+                            fadeout(fadespeed=1)
+                            in_shop = False #exits shop
+                        elif 500 <= player_x_coordinate <= 700:
+                            in_shop_menu = True #activates menu
+
+
+            if moving == False: #if stationary
+                if 1<= player_sprite_count <= 4: #if last facing right
+                    player_sprite_count = 0 #set to stationary right sprite
+                elif 6 <= player_sprite_count <= 9: #opposite to above
+                    player_sprite_count = 5
+
+            if in_shop == False:
+                if 170 <= player_x_coordinate <= 260:
+                    show_space = True #if outside and near door, show space indicator
+                elif player_x_coordinate >= 550:  # if player is near the end of the pier
+                    show_space = True
+            elif in_shop == True:
+                if 100 <= player_x_coordinate <= 300:
+                    show_space = True #if inside and near door, show space indicator
+                elif 500 <= player_x_coordinate <= 700:
+                    show_space = True #if inside and near counter, show space indicator
+
+
+            if in_shop == False:
+                player_y_coordinate = 265
+                if player.cast == False:
+                    screen.blit(player_sprites[player_sprite_count],(player_x_coordinate,player_y_coordinate)) #displays sprite
+
+                else:
+                    screen.blit(player_sprites[10], (player_x_coordinate, player_y_coordinate)) #displays sprite with hand held out
+                    screen.blit(player.held_rod.hand_sprite,(player_x_coordinate+100,280))
+                    screen.blit(bobber,(player_x_coordinate+158,285))
+                    fishing_minigame(player)
+
+            else:
+                player_y_coordinate = 395
+                screen.blit(player_sprites_scaled[player_sprite_count],(player_x_coordinate,player_y_coordinate)) #displays sprite but scaled up a bit and y changed
+
+            if show_space == True: #if near interactable area
+                if in_shop == False:
+                    screen.blit(space, (player_x_coordinate-70,player_y_coordinate)) #displays space indicator near player
+                else:
+                    screen.blit(space,(player_x_coordinate + 200, player_y_coordinate))  # displays space indicator near player
+
+
+    # Inventory/GUI
+
+            if inventory_open == True:
+                screen.blit(dim_overlay, (0, 0)) #puts the faded new screen to make the background darker to bring more contrast to inv
+
+                #displays inv and text
+                screen.blit(inventory,(160,90))
+                screen.blit(inventory_font.render(f"Money: £{player.money}", False, "yellow"), (175,107))
+                screen.blit(inventory_font.render(f"Weight: {player.weight:.0f}kg", False, "yellow"), (480,107))
+                screen.blit(inventory_font.render("Fishdex:", False, "yellow"), (780,107))
+                screen.blit(inventory_font.render("Fish:", False, "yellow"), (175,145))
+                screen.blit(inventory_font.render("Quantity:", False, "yellow"), (480,145))
+                screen.blit(inventory_font.render("Sell Price:", False, "yellow"), (780, 145))
+
+                inventory_summary = {} #creates emtpy dictionary
+                for fish in player.inventory: #for each fish inside the players inv
+                    if fish.name not in inventory_summary: #if fish's name isnt in it
+                        inventory_summary[fish.name] = {"fish":fish, "quantity":1} #add it with a quantity of 1
+                    else:
+                        inventory_summary[fish.name]["quantity"]+=1 #otherwise add another to the quantity
+
+                inventory_summary_list = list(inventory_summary.values()) #.values() returns just values of the item, list() converts the dictionary into a normal list
+                #calculates what fish to show
+                start = player.inventory_page*9 #calculate starting index
+                end = start+9 #calculate ending index
+                visible_fish = inventory_summary_list[start:end] #take only fish entries from current page
+                text_y_pos = 185
+                for entry in visible_fish: #for each fish in the fish that will be displayed
+                    fish = entry["fish"] #get fish object from entry dictionary
+                    quantity = entry["quantity"] #how many fish of this name does the player own?
+                    total_price = fish.sell_price*quantity #how much does it all sell for?
+                    screen.blit(inventory_font.render(f"{fish.name}   x{quantity}", False, "yellow"), (175,text_y_pos)) #show stats
+                    screen.blit(inventory_font.render(f"{total_price}", False, "yellow"), (775,text_y_pos))
+                    text_y_pos+=50 #for the next fish, blit info 50 pixels down
+
+            elif fishdex_open == True:
+                screen.blit(dim_overlay, (0,0)) #dims screen
+                screen.blit(fishdex_menu,(160,90)) #displays fishdex menu
+                screen.blit(inventory_font.render(f"Fishdex progression: {player.unique_fish_caught}/25", False, "yellow"), (175,107)) #shows progression as text
+
+                fish_per_page = 4 #sets amount of fish per page to 4
+                start = player.fishdex_page*fish_per_page #first fish index for this page
+                end = start+fish_per_page #last fish index for this page
+                visible_fish = fishdex_list[start:end] #the 4 fish to display on this page
+
+                box_locations = [(210,165),(650,165),(210,395),(650,395)] #positions of the fish boxes
+                for i in range(len(visible_fish)): #loop through the 4 fish to display on this page
+                    fish=visible_fish[i] #get current fish
+                    box_x, box_y = box_locations[i] #get box position
+                    pygame.draw.rect(screen, "black", (box_x, box_y, 384,200),6) #draw box fish border (black, coordinates, width/height, thickness)
+
+                    if fish.caught_before: #if the fish has been caught
+                        sprite_rect = fish.ui_sprite.get_rect(center=(box_x+185, box_y+50)) #display its sprite
+                        weather_text = ", ".join(fish.weather) #sets weather to a string instead of list to print
+
+                        if fish.time == {True}: #sets time text to show day/night intead of True/False
+                            time_text = "Day"
+                        elif fish.time == {False}:
+                            time_text = "Night"
+                        else:
+                            time_text = "Day and Night"
+
+                        if fish.rarity == "Common": #sets rarity text to colour associated with rarity
+                            colour = "grey"
+                        elif fish.rarity == "Rare":
+                            colour = "blue"
+                        elif fish.rarity == "Epic":
+                            colour = "purple"
+                        elif fish.rarity == "Legendary":
+                            colour = "orange"
+
+                        #shows fish details
+                        screen.blit(fish.ui_sprite,sprite_rect)
+                        screen.blit(Fishdex_font_small.render(fish.name, False, "yellow"), (box_x+10,box_y+100))
+                        screen.blit(Fishdex_font_small.render(f"Rarity: {fish.rarity}", False, colour), (box_x + 10, box_y + 125))
+                        screen.blit(Fishdex_font_small.render(f"Weather req: {weather_text}", False, "yellow"), (box_x+10,box_y+150))
+                        screen.blit(Fishdex_font_small.render(f"Time req: {time_text}", False, "yellow"), (box_x+10, box_y+175))
+
+                    #shows hidden fish details if they have not caught it
+                    else:
+                        screen.blit(Fishdex_font_big.render("?", False, "grey"), (box_x+185,box_y+50))
+                        screen.blit(Fishdex_font_small.render("Not caught", False, "red"), (box_x+10,box_y+100))
+                        screen.blit(Fishdex_font_small.render("Rarity: ???", False, "white"), (box_x+10,box_y+125))
+                        screen.blit(Fishdex_font_small.render("Weather req: ???", False, "white"), (box_x + 10,box_y + 150))
+                        screen.blit(Fishdex_font_small.render("Time req: ???", False, "white"), (box_x + 10,box_y + 175))
+
+
+            elif in_shop_menu == True:
+                screen.blit(dim_overlay,(0,0)) #displays gui stuff
+                screen.blit(shop_menu,(160,90))
+                screen.blit(back_sell_button,(25,645))
+                screen.blit(back_sell_button,(1160,645))
+                screen.blit(back_sell_font.render("Back",False,"red"), (30,656))
+                screen.blit(back_sell_font.render("Sell",False,"green"), (1165,656))
+
+                next_rod = shop_next_rod(player) #figures out which rod is the next to be bought with the subroutines outside the while loop
+
+                shop_mouse_pos = pygame.mouse.get_pos() #get mouse pos
+                x, y = shop_mouse_pos
+
+                if next_rod != None: #if they can get a new rod
+                    screen.blit(next_rod.sprite, (200,150)) #show next rod's sprite, name and cost
+                    screen.blit(shop_upgrade_font.render(next_rod.name, False, "Black"),(270,155))
+                    screen.blit(shop_upgrade_font.render(f"Cost: {next_rod.cost}",False, "Black"), (700,155))
+
+                screen.blit(Worm_bait.sprite, (185,410)) #displays all bait sprites, names and costs
+                screen.blit(shop_bait_font.render(Worm_bait.name, False, "Black"), (240,400))
+                screen.blit(shop_bait_font.render(f"Cost: {Worm_bait.cost}",False, "Black"), (240,430))
+                screen.blit(Glow_bait.sprite, (670,410))
+                screen.blit(shop_bait_font.render(Glow_bait.name, False, "Black"), (725, 400))
+                screen.blit(shop_bait_font.render(f"Cost: {Glow_bait.cost}", False, "Black"), (725, 430))
+                screen.blit(Chum_bait.sprite, (190,550))
+                screen.blit(shop_bait_font.render(Chum_bait.name, False, "Black"), (245,540))
+                screen.blit(shop_bait_font.render(f"Cost: {Chum_bait.cost}", False, "Black"), (245,570))
+                screen.blit(Rainbow_bait.sprite, (670,550))
+                screen.blit(shop_bait_font.render(Rainbow_bait.name, False, "Black"), (725,540))
+                screen.blit(shop_bait_font.render(f"Cost: {Rainbow_bait.cost}", False, "Black"), (725,570))
+                screen.blit(weight_shop_sprite, (200,275))
+                screen.blit(shop_upgrade_font.render("Max weight +10kg", False, "Black"), (270,280))
+                screen.blit(shop_upgrade_font.render(f"Cost: {player.weight_upgrade_cost}", False, "Black"), (700,280))
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if 30<=x<=110 and 650<=y<=690: #if press close button
+                        in_shop_menu = False #leave shop GUI
+                    if 990<=x<=1100 and 130<=y<=190: #if press buy new rod button
+                        if can_buy == True:
+                            buy_next_rod(player)
+                            can_buy = False #stops player buying multiple rods each frame
+                    if 990<=x<=1110 and 265<=y<=320: #if press buy max weight
+                        if can_buy == True:
+                            buy_next_weight(player)
+                            can_buy = False
+                    if 515<=x<=625 and 400<=y<=455: #if buy worm bait
+                        if can_buy == True:
+                            buy_bait(player,Worm_bait)
+                            can_buy = False
+                    if 990<=x<=1100 and 400<=y<=455: #if buy glow bait
+                        if can_buy == True:
+                            buy_bait(player, Glow_bait)
+                            can_buy = False
+                    if 515<=x<=625 and 535<=y<=590: #if buy chum bait
+                        if can_buy == True:
+                            buy_bait(player, Chum_bait)
+                            can_buy = False
+                    if 990<=x<=1100 and 535<=y<=590: #if buy rainbow bait
+                        if can_buy == True:
+                            buy_bait(player, Rainbow_bait)
+                            can_buy = False
+                    if 1160<=x<=1250 and 645<=y<=690:
+                        for fish in player.inventory:
+                            player.money+=fish.sell_price
+                            player.weight = 0
+                        player.inventory.clear()
+
+                if event.type == pygame.MOUSEBUTTONUP: #if player lets go of mouse
+                    can_buy = True #player can buy something again
+
+
+            else:
+                ingame_clock = str(hour_display).zfill(2)+":"+str(minute_display).zfill(2) #zfill if string is 1 character long it puts a 0 at the start of the string until is as long as parameter put in (2)
+
+                screen.blit(board,(1080,650)) #bottom right (weight)
+                screen.blit(Weight_font.render("Weight:", False, "yellow"), (1087, 657))
+                screen.blit(Weight_font.render(f"{player.weight:.0f}kg/{player.max_weight}kg", False, "yellow"), (1087, 687))
+
+                screen.blit(board,(1080,5)) #top right (time)
+                screen.blit(Clock_font.render(ingame_clock, False, "yellow"),(1100,25))
+
+                screen.blit(board,(1080,75)) #second top right (weather)
+                screen.blit(Weather_font.render(current_weather, False, Weather_font_colour), (1105, 97))
+
+                screen.blit(board,(1080,145)) #third top right (fishdex)
+                screen.blit(Fishdex_counter_font.render(f"{player.unique_fish_caught}/25", False, "yellow"),(1088,167))
+                screen.blit(Fishdex_counter_font_side.render("Fish", False, "yellow"), (1179, 160))
+                screen.blit(Fishdex_counter_font_side.render("Caught", False, "yellow"), (1179,178))
+
+            #these are out of the loop so they are always displayed, even if in shop/inv GUI
+            screen.blit(board,(10,5)) #top left (money)
+            screen.blit(Money_font.render(f"{player.money} gold", False, "yellow"), (20, 30))
+            screen.blit(hotbar,(576,650)) #bottom middle (hotbar)
+            screen.blit(player.held_rod.sprite, (590,665))
+            screen.blit(player.held_bait.sprite, (650, 665))
+            screen.blit(inv_bait_amount_font.render(f"{player.bait_amount}", False, "white"), (676,663))
+
+            if player.fish_state == "show_fish": #if player has caught a fish
+                current_time = pygame.time.get_ticks() #get time
+                if current_time - player.show_fish <10000: #for the next 5 seconds, show the fish sprite and name of the fish they caught
+                    screen.blit(board,(10,656))
+
+                    box_x, box_y = 15,656 #top left of 64x64 area
+                    fish_sprite = player.caught_fish.ui_sprite #gets prescaled UI version of fish sprite
+                    fish_rect = fish_sprite.get_rect(center=(box_x+32, box_y+32)) #create a rect for the sprite and center it inside the 64x64 box
+                    screen.blit(fish_sprite,fish_rect) #draw at calculated position
+
+                    screen.blit(fish_font.render(f"{player.caught_fish.name}",False,"yellow"), (80,680))
+                else:
+                    player.fish_state = "idle"
 
         pygame.display.update()
         Clock.tick(FPS)
