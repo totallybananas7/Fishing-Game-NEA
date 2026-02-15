@@ -23,8 +23,7 @@ Clock = pygame.time.Clock()
 def main_menu_loop():
     Main_menu_running = True
     BG = pygame.image.load("Assets/Menus/Main_menu_background.png").convert_alpha() #loads background image once
-    Text_font = pygame.font.Font("PressStart2P-Regular.ttf", 20)
-
+    fontsize20 = pygame.font.Font("PressStart2P-Regular.ttf", 20)
     main_menu_background_music = pygame.mixer.Sound("Assets/Menus/Main_menu_background_music.mp3") #sets main menu background music file as a variable
     main_menu_background_music.set_volume(0.05) #sets MMBMF volume to 50%
     main_menu_background_music.play(-1) #plays the MMBMF infinitely
@@ -69,10 +68,10 @@ def main_menu_loop():
         screen.blit(BG, (0, 0))
 
         # draws menu text
-        screen.blit(Text_font.render("Load Game", False, main_menu_font_colourLG), (555, 294))
-        screen.blit(Text_font.render("New Game", False, main_menu_font_colourNG), (565, 403))
-        screen.blit(Text_font.render("Settings", False, main_menu_font_colourS), (563, 509))
-        screen.blit(Text_font.render("Exit Game", False, main_menu_font_colourEG), (555, 616))
+        screen.blit(fontsize20.render("Load Game", False, main_menu_font_colourLG), (555, 294))
+        screen.blit(fontsize20.render("New Game", False, main_menu_font_colourNG), (565, 403))
+        screen.blit(fontsize20.render("Settings", False, main_menu_font_colourS), (563, 509))
+        screen.blit(fontsize20.render("Exit Game", False, main_menu_font_colourEG), (555, 616))
 
         # updates display
         pygame.display.update()
@@ -219,10 +218,6 @@ def main_game(): #all game stuff goes in here
     #creating fonts for the inv and loading images
     board = pygame.image.load("Assets/Menus/board.png").convert_alpha()
     hotbar = pygame.image.load("Assets/Menus/hotbar.png").convert_alpha()
-    Weight_font = pygame.font.Font("PressStart2P-Regular.ttf", 17)
-    Money_font = pygame.font.Font("PressStart2P-Regular.ttf", 17)
-    Clock_font = pygame.font.Font("PressStart2P-Regular.ttf", 30)
-    Weather_font = pygame.font.Font("PressStart2P-Regular.ttf", 20)
     Weather_font_colour = "aqua"
 
     minutes = [00, 10, 20, 30, 40, 50] #list of possible minutes the clock can display
@@ -234,24 +229,19 @@ def main_game(): #all game stuff goes in here
 
     inventory_open = False #creates variable used later for checking if the inv is open
     inventory = pygame.image.load("Assets/Menus/inventory.png").convert_alpha() #loads inventory bg
-    inventory_font = pygame.font.Font("PressStart2P-Regular.ttf", 20) #loads font for txt in inv
 
     shop_bg = pygame.image.load("Assets/Shop/background_shop.png").convert_alpha()
     npc_left = pygame.image.load("Assets/Shop/Corkah_left.png").convert_alpha()
     space = pygame.image.load("Assets/Shop/space.png").convert_alpha()
     shop_menu = pygame.image.load("Assets/Shop/shop interface.png").convert_alpha()
     back_sell_button = pygame.image.load("Assets/Shop/back_button.png").convert_alpha()
-    back_sell_font = pygame.font.Font("PressStart2P-Regular.ttf",20)
     in_shop = False #instantiate variable for checking if in shop
     in_shop_menu = False #instantiate variable for checking if in shop menu
     dim_overlay = pygame.Surface((1280,720))  # creates a new screen the size of the window
     dim_overlay.set_alpha(140)  # sets transparency of the new screen
     dim_overlay.fill((0,0,0))  # sets the new screen to black
-    shop_upgrade_font = pygame.font.Font("PressStart2P-Regular.ttf",25)
-    shop_bait_font = pygame.font.Font("PressStart2P-Regular.ttf",20)
     weight_shop_sprite = pygame.image.load("Assets/Shop/weight_upgrade.png").convert_alpha()
     can_buy = True #instantiates can buy variable for later in the shop, so you cant buy multiple rods every next frame
-    inv_bait_amount_font = pygame.font.Font("PressStart2P-Regular.ttf",10)
 
     class Rod: #declaring rod class
         def __init__(self, name, sprite, fishing_speed, luck, cost, upgrade_index): #constructor method for rod
@@ -370,8 +360,6 @@ def main_game(): #all game stuff goes in here
     fishing_minigame_bar = pygame.image.load("Assets/Fishing minigame/fishing_minigame_move_bar.png").convert_alpha()
     splash = pygame.mixer.Sound("Assets/Fishing minigame/Splash.mp3")  #splash sound effect
     splash.set_volume(0.05)
-    max_weight_font = pygame.font.Font("PressStart2P-Regular.ttf",20)
-    fish_font = pygame.font.Font("PressStart2P-Regular.ttf",6)
 
     class Fish():
         def __init__(self,name,rarity,sell_price,weight,weather,time,sprite):
@@ -536,6 +524,8 @@ def main_game(): #all game stuff goes in here
             screen.blit(fishing_minigame_bar, bar_rect)  # displays moveable rect at rectangle coords
             screen.blit(fishing_minigame_fish, fish_rect)  # displays fish at rectangle coords
             pygame.draw.rect(screen, (0, 255, 0), (910, bottom_y - player.fish_progress, 20,player.fish_progress))  # PROGRESS DISPLAY - colour, coordinates, width+height
+            screen.blit(fontsize10.render("Hold the W key to move the bar up", False, "yellow"), (945, 375))
+            screen.blit(fontsize10.render("Let go to move the bar down", False, "yellow"), (945, 400))
 
 
         elif player.fish_state == "won":
@@ -565,16 +555,24 @@ def main_game(): #all game stuff goes in here
 
     fishdex_menu = pygame.image.load("Assets/Menus/fishdex.png").convert_alpha()
     fishdex_open = False
-    Fishdex_counter_font = pygame.font.Font("PressStart2P-Regular.ttf", 21)
-    Fishdex_counter_font_side = pygame.font.Font("PressStart2P-Regular.ttf", 15)
-    Fishdex_font_big = pygame.font.Font("PressStart2P-Regular.ttf", 18)
-    Fishdex_font_small = pygame.font.Font("PressStart2P-Regular.ttf", 15)
 
     paused = False
-    big_pause_font = pygame.font.Font("PressStart2P-Regular.ttf", 50)
     dim_overlay_pause = pygame.Surface((1280, 720))  # creates a new screen the size of the window
-    dim_overlay_pause.set_alpha(200)  # sets transparency of the new screen
+    dim_overlay_pause.set_alpha(200)  # sets transparency of the new screen 200
     dim_overlay_pause.fill((0, 0, 0))
+
+    text_board = pygame.image.load("Assets/Menus/text_board.png")
+
+    fontsize6 = pygame.font.Font("PressStart2P-Regular.ttf", 6)
+    fontsize10 = pygame.font.Font("PressStart2P-Regular.ttf", 10)
+    fontsize15 = pygame.font.Font("PressStart2P-Regular.ttf", 15)
+    fontsize17 = pygame.font.Font("PressStart2P-Regular.ttf", 17)
+    fontsize18 = pygame.font.Font("PressStart2P-Regular.ttf", 18)
+    fontsize20 = pygame.font.Font("PressStart2P-Regular.ttf", 20)
+    fontsize21 = pygame.font.Font("PressStart2P-Regular.ttf", 21)
+    fontsize25 = pygame.font.Font("PressStart2P-Regular.ttf", 25)
+    fontsize30 = pygame.font.Font("PressStart2P-Regular.ttf", 30)
+    fontsize50 = pygame.font.Font("PressStart2P-Regular.ttf", 50)
 
 
 
@@ -588,43 +586,59 @@ def main_game(): #all game stuff goes in here
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
+
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    paused = not paused
-                if paused == False: #if the game is not paused, reset vol and look for inputs
-                    current_background_music.set_volume(0.05)
-                    if event.key == pygame.K_e: #if its e
-                        inventory_open = not inventory_open #flips state of inventory_open
-                        if inventory_open == True: #if it is true
-                            player.inventory_page = 0 #page inv on is the first one
-                    if event.key == pygame.K_f:
-                        fishdex_open = not fishdex_open
-                        if fishdex_open == True:
-                            player.fishdex_page = 0
-                else: #if game is paused:
-                    current_background_music.set_volume(0.00) #set music to silent
-                    screen.blit(dim_overlay_pause, (0, 0))
-                    screen.blit(big_pause_font.render("PAUSED", False, "red"), (500,100))
+                    if player.fish_state == "idle":
+                        paused = not paused
+                        if paused:
+                            screen.blit(dim_overlay_pause, (0, 0)) #dim as pause mode is entered
+                        current_background_music.set_volume(0.0 if paused else 0.05)
+                    else:
+                        pass
 
-            if event.type == pygame.MOUSEBUTTONDOWN and (
-                    inventory_open == True or fishdex_open == True):  # if mouse clicked and either the fishdex or inventory is open
-                x, y = pygame.mouse.get_pos()
-                if 1075 <= x <= 1110 and 100 <= y <= 130:  # if near the X button
-                    inventory_open = False  # inv is closed
-                    fishdex_open = False
-                if 1075 <= x <= 1110 and 135 <= y <= 170:  # if click on up arrow
-                    if player.inventory_page > 0:  # prevent going on a page smaller than 0
-                        player.inventory_page -= 1  # go up a page
-                    if player.fishdex_page > 0:
-                        player.fishdex_page -= 1
+                if event.key == pygame.K_e: #if its e
+                    inventory_open = not inventory_open #flips state of inventory_open
+                    if inventory_open == True: #if it is true
+                        player.inventory_page = 0 #page inv on is the first one
 
-                if 1075 <= x <= 1110 and 585 <= y <= 620:  # if click on down arrow
-                    if inventory_open == True:
-                        if (player.inventory_page + 1) * 9 < len(inventory_summary_list):  # if there are fish on the next page
-                            player.inventory_page += 1  # go to next page
+                if event.key == pygame.K_f:
+                    fishdex_open = not fishdex_open
                     if fishdex_open == True:
-                        if (player.fishdex_page + 1) < 7:  # if they are trying to click on empty page
-                            player.fishdex_page += 1
+                        player.fishdex_page = 0
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = event.pos
+
+                if paused:
+                    if 530 <= x <= 750 and 269 <= y <= 320:  # if mouse near button
+                        paused = False
+                        current_background_music.set_volume(0.05)
+                    elif 530 <= x <= 750 and 369 <= y <= 420: #settings button
+                        pass
+                    elif 530 <= x <= 750 and 470 <= y <= 520: #save button
+                        pass
+                    elif 530 <= x <= 750 and 570 <= y <= 620:
+                        main_menu_loop()
+                        game_running = False
+
+                elif inventory_open or fishdex_open:
+                    if 1075 <= x <= 1110 and 100 <= y <= 130:  # if near the X button
+                        inventory_open = False  # inv is closed
+                        fishdex_open = False
+                    if 1075 <= x <= 1110 and 135 <= y <= 170:  # if click on up arrow
+                        if player.inventory_page > 0:  # prevent going on a page smaller than 0
+                            player.inventory_page -= 1  # go up a page
+                        if player.fishdex_page > 0:
+                            player.fishdex_page -= 1
+
+                    if 1075 <= x <= 1110 and 585 <= y <= 620:  # if click on down arrow
+                        if inventory_open == True:
+                            if (player.inventory_page + 1) * 9 < len(inventory_summary_list):  # if there are fish on the next page
+                                player.inventory_page += 1  # go to next page
+                        if fishdex_open == True:
+                            if (player.fishdex_page + 1) < 7:  # if they are trying to click on empty page
+                                player.fishdex_page += 1
 
         if not paused:
 
@@ -863,7 +877,7 @@ def main_game(): #all game stuff goes in here
                                 player.fish_height = 345  # resets fishes height to center
                                 player.bar_height = 310  # resets bar to center
                             else:
-                                screen.blit(max_weight_font.render("Max weight reached!",False,"Red"),(player_x_coordinate+200,300))
+                                screen.blit(fontsize20.render("Max weight reached!",False,"Red"),(player_x_coordinate+200,300))
 
                     elif in_shop == True:
                         if 100 <= player_x_coordinate <= 300: #if in shop and near door
@@ -920,12 +934,12 @@ def main_game(): #all game stuff goes in here
 
                 #displays inv and text
                 screen.blit(inventory,(160,90))
-                screen.blit(inventory_font.render(f"Money: £{player.money}", False, "yellow"), (175,107))
-                screen.blit(inventory_font.render(f"Weight: {player.weight:.0f}kg", False, "yellow"), (480,107))
-                screen.blit(inventory_font.render("Fishdex:", False, "yellow"), (780,107))
-                screen.blit(inventory_font.render("Fish:", False, "yellow"), (175,145))
-                screen.blit(inventory_font.render("Quantity:", False, "yellow"), (480,145))
-                screen.blit(inventory_font.render("Sell Price:", False, "yellow"), (780, 145))
+                screen.blit(fontsize20.render(f"Money: £{player.money}", False, "yellow"), (175,107))
+                screen.blit(fontsize20.render(f"Weight: {player.weight:.0f}kg", False, "yellow"), (480,107))
+                screen.blit(fontsize20.render("Fishdex:", False, "yellow"), (780,107))
+                screen.blit(fontsize20.render("Fish:", False, "yellow"), (175,145))
+                screen.blit(fontsize20.render("Quantity:", False, "yellow"), (480,145))
+                screen.blit(fontsize20.render("Sell Price:", False, "yellow"), (780, 145))
 
                 inventory_summary = {} #creates emtpy dictionary
                 for fish in player.inventory: #for each fish inside the players inv
@@ -944,14 +958,14 @@ def main_game(): #all game stuff goes in here
                     fish = entry["fish"] #get fish object from entry dictionary
                     quantity = entry["quantity"] #how many fish of this name does the player own?
                     total_price = fish.sell_price*quantity #how much does it all sell for?
-                    screen.blit(inventory_font.render(f"{fish.name}   x{quantity}", False, "yellow"), (175,text_y_pos)) #show stats
-                    screen.blit(inventory_font.render(f"{total_price}", False, "yellow"), (775,text_y_pos))
+                    screen.blit(fontsize20.render(f"{fish.name}   x{quantity}", False, "yellow"), (175,text_y_pos)) #show stats
+                    screen.blit(fontsize20.render(f"{total_price}", False, "yellow"), (775,text_y_pos))
                     text_y_pos+=50 #for the next fish, blit info 50 pixels down
 
             elif fishdex_open == True:
                 screen.blit(dim_overlay, (0,0)) #dims screen
                 screen.blit(fishdex_menu,(160,90)) #displays fishdex menu
-                screen.blit(inventory_font.render(f"Fishdex progression: {player.unique_fish_caught}/25", False, "yellow"), (175,107)) #shows progression as text
+                screen.blit(fontsize20.render(f"Fishdex progression: {player.unique_fish_caught}/25", False, "yellow"), (175,107)) #shows progression as text
 
                 fish_per_page = 4 #sets amount of fish per page to 4
                 start = player.fishdex_page*fish_per_page #first fish index for this page
@@ -986,18 +1000,18 @@ def main_game(): #all game stuff goes in here
 
                         #shows fish details
                         screen.blit(fish.ui_sprite,sprite_rect)
-                        screen.blit(Fishdex_font_small.render(fish.name, False, "yellow"), (box_x+10,box_y+100))
-                        screen.blit(Fishdex_font_small.render(f"Rarity: {fish.rarity}", False, colour), (box_x + 10, box_y + 125))
-                        screen.blit(Fishdex_font_small.render(f"Weather req: {weather_text}", False, "yellow"), (box_x+10,box_y+150))
-                        screen.blit(Fishdex_font_small.render(f"Time req: {time_text}", False, "yellow"), (box_x+10, box_y+175))
+                        screen.blit(fontsize15.render(fish.name, False, "yellow"), (box_x+10,box_y+100))
+                        screen.blit(fontsize15.render(f"Rarity: {fish.rarity}", False, colour), (box_x + 10, box_y + 125))
+                        screen.blit(fontsize15.render(f"Weather req: {weather_text}", False, "yellow"), (box_x+10,box_y+150))
+                        screen.blit(fontsize15.render(f"Time req: {time_text}", False, "yellow"), (box_x+10, box_y+175))
 
                     #shows hidden fish details if they have not caught it
                     else:
-                        screen.blit(Fishdex_font_big.render("?", False, "grey"), (box_x+185,box_y+50))
-                        screen.blit(Fishdex_font_small.render("Not caught", False, "red"), (box_x+10,box_y+100))
-                        screen.blit(Fishdex_font_small.render("Rarity: ???", False, "white"), (box_x+10,box_y+125))
-                        screen.blit(Fishdex_font_small.render("Weather req: ???", False, "white"), (box_x + 10,box_y + 150))
-                        screen.blit(Fishdex_font_small.render("Time req: ???", False, "white"), (box_x + 10,box_y + 175))
+                        screen.blit(fontsize18.render("?", False, "grey"), (box_x+185,box_y+50))
+                        screen.blit(fontsize15.render("Not caught", False, "red"), (box_x+10,box_y+100))
+                        screen.blit(fontsize15.render("Rarity: ???", False, "white"), (box_x+10,box_y+125))
+                        screen.blit(fontsize15.render("Weather req: ???", False, "white"), (box_x + 10,box_y + 150))
+                        screen.blit(fontsize15.render("Time req: ???", False, "white"), (box_x + 10,box_y + 175))
 
 
             elif in_shop_menu == True:
@@ -1005,8 +1019,8 @@ def main_game(): #all game stuff goes in here
                 screen.blit(shop_menu,(160,90))
                 screen.blit(back_sell_button,(25,645))
                 screen.blit(back_sell_button,(1160,645))
-                screen.blit(back_sell_font.render("Back",False,"red"), (30,656))
-                screen.blit(back_sell_font.render("Sell",False,"green"), (1165,656))
+                screen.blit(fontsize20.render("Back",False,"red"), (30,656))
+                screen.blit(fontsize20.render("Sell",False,"green"), (1165,656))
 
                 next_rod = shop_next_rod(player) #figures out which rod is the next to be bought with the subroutines outside the while loop
 
@@ -1015,24 +1029,24 @@ def main_game(): #all game stuff goes in here
 
                 if next_rod != None: #if they can get a new rod
                     screen.blit(next_rod.sprite, (200,150)) #show next rod's sprite, name and cost
-                    screen.blit(shop_upgrade_font.render(next_rod.name, False, "Black"),(270,155))
-                    screen.blit(shop_upgrade_font.render(f"Cost: {next_rod.cost}",False, "Black"), (700,155))
+                    screen.blit(fontsize25.render(next_rod.name, False, "Black"),(270,155))
+                    screen.blit(fontsize25.render(f"Cost: {next_rod.cost}",False, "Black"), (700,155))
 
                 screen.blit(Worm_bait.sprite, (185,410)) #displays all bait sprites, names and costs
-                screen.blit(shop_bait_font.render(Worm_bait.name, False, "Black"), (240,400))
-                screen.blit(shop_bait_font.render(f"Cost: {Worm_bait.cost}",False, "Black"), (240,430))
+                screen.blit(fontsize20.render(Worm_bait.name, False, "Black"), (240,400))
+                screen.blit(fontsize20.render(f"Cost: {Worm_bait.cost}",False, "Black"), (240,430))
                 screen.blit(Glow_bait.sprite, (670,410))
-                screen.blit(shop_bait_font.render(Glow_bait.name, False, "Black"), (725, 400))
-                screen.blit(shop_bait_font.render(f"Cost: {Glow_bait.cost}", False, "Black"), (725, 430))
+                screen.blit(fontsize20.render(Glow_bait.name, False, "Black"), (725, 400))
+                screen.blit(fontsize20.render(f"Cost: {Glow_bait.cost}", False, "Black"), (725, 430))
                 screen.blit(Chum_bait.sprite, (190,550))
-                screen.blit(shop_bait_font.render(Chum_bait.name, False, "Black"), (245,540))
-                screen.blit(shop_bait_font.render(f"Cost: {Chum_bait.cost}", False, "Black"), (245,570))
+                screen.blit(fontsize20.render(Chum_bait.name, False, "Black"), (245,540))
+                screen.blit(fontsize20.render(f"Cost: {Chum_bait.cost}", False, "Black"), (245,570))
                 screen.blit(Rainbow_bait.sprite, (670,550))
-                screen.blit(shop_bait_font.render(Rainbow_bait.name, False, "Black"), (725,540))
-                screen.blit(shop_bait_font.render(f"Cost: {Rainbow_bait.cost}", False, "Black"), (725,570))
+                screen.blit(fontsize20.render(Rainbow_bait.name, False, "Black"), (725,540))
+                screen.blit(fontsize20.render(f"Cost: {Rainbow_bait.cost}", False, "Black"), (725,570))
                 screen.blit(weight_shop_sprite, (200,275))
-                screen.blit(shop_upgrade_font.render("Max weight +10kg", False, "Black"), (270,280))
-                screen.blit(shop_upgrade_font.render(f"Cost: {player.weight_upgrade_cost}", False, "Black"), (700,280))
+                screen.blit(fontsize25.render("Max weight +10kg", False, "Black"), (270,280))
+                screen.blit(fontsize25.render(f"Cost: {player.weight_upgrade_cost}", False, "Black"), (700,280))
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if 30<=x<=110 and 650<=y<=690: #if press close button
@@ -1075,31 +1089,31 @@ def main_game(): #all game stuff goes in here
                 ingame_clock = str(hour_display).zfill(2)+":"+str(minute_display).zfill(2) #zfill if string is 1 character long it puts a 0 at the start of the string until is as long as parameter put in (2)
 
                 screen.blit(board,(1080,650)) #bottom right (weight)
-                screen.blit(Weight_font.render("Weight:", False, "yellow"), (1087, 657))
-                screen.blit(Weight_font.render(f"{player.weight:.0f}kg/{player.max_weight}kg", False, "yellow"), (1087, 687))
+                screen.blit(fontsize17.render("Weight:", False, "yellow"), (1087, 657))
+                screen.blit(fontsize17.render(f"{player.weight:.0f}kg/{player.max_weight}kg", False, "yellow"), (1087, 687))
 
                 screen.blit(board,(1080,5)) #top right (time)
-                screen.blit(Clock_font.render(ingame_clock, False, "yellow"),(1100,25))
+                screen.blit(fontsize30.render(ingame_clock, False, "yellow"),(1100,25))
 
                 screen.blit(board,(1080,75)) #second top right (weather)
-                screen.blit(Weather_font.render(current_weather, False, Weather_font_colour), (1105, 97))
+                screen.blit(fontsize20.render(current_weather, False, Weather_font_colour), (1105, 97))
 
                 screen.blit(board,(1080,145)) #third top right (fishdex)
-                screen.blit(Fishdex_counter_font.render(f"{player.unique_fish_caught}/25", False, "yellow"),(1088,167))
-                screen.blit(Fishdex_counter_font_side.render("Fish", False, "yellow"), (1179, 160))
-                screen.blit(Fishdex_counter_font_side.render("Caught", False, "yellow"), (1179,178))
+                screen.blit(fontsize21.render(f"{player.unique_fish_caught}/25", False, "yellow"),(1088,167))
+                screen.blit(fontsize15.render("Fish", False, "yellow"), (1179, 160))
+                screen.blit(fontsize15.render("Caught", False, "yellow"), (1179,178))
 
             #these are out of the loop so they are always displayed, even if in shop/inv GUI
             screen.blit(board,(10,5)) #top left (money)
-            screen.blit(Money_font.render(f"{player.money} gold", False, "yellow"), (20, 30))
+            screen.blit(fontsize17.render(f"{player.money} gold", False, "yellow"), (20, 30))
             screen.blit(hotbar,(576,650)) #bottom middle (hotbar)
             screen.blit(player.held_rod.sprite, (590,665))
             screen.blit(player.held_bait.sprite, (650, 665))
-            screen.blit(inv_bait_amount_font.render(f"{player.bait_amount}", False, "white"), (676,663))
+            screen.blit(fontsize10.render(f"{player.bait_amount}", False, "white"), (676,663))
 
             if player.fish_state == "show_fish": #if player has caught a fish
                 current_time = pygame.time.get_ticks() #get time
-                if current_time - player.show_fish <10000: #for the next 5 seconds, show the fish sprite and name of the fish they caught
+                if current_time - player.show_fish <2000: #for the next 2 seconds, show the fish sprite and name of the fish they caught
                     screen.blit(board,(10,656))
 
                     box_x, box_y = 15,656 #top left of 64x64 area
@@ -1107,9 +1121,41 @@ def main_game(): #all game stuff goes in here
                     fish_rect = fish_sprite.get_rect(center=(box_x+32, box_y+32)) #create a rect for the sprite and center it inside the 64x64 box
                     screen.blit(fish_sprite,fish_rect) #draw at calculated position
 
-                    screen.blit(fish_font.render(f"{player.caught_fish.name}",False,"yellow"), (80,680))
+                    screen.blit(fontsize6.render(f"{player.caught_fish.name}",False,"yellow"), (80,680))
                 else:
                     player.fish_state = "idle"
+
+        if paused:
+            resumecolour = "Yellow"
+            settingscolour = "Yellow"
+            savegamecolour = "Yellow"
+            quitgamecolour = "Yellow"
+
+            menu_mouse_pos = pygame.mouse.get_pos()
+            x, y = menu_mouse_pos
+
+            if 530 <= x <= 750 and 269 <= y <= 320:  # if mouse near button
+                resumecolour = "Green"  # change text colour
+
+            if 530 <= x <= 750 and 369 <= y <= 420:
+                settingscolour = "Green"
+
+            if 530 <= x <= 750 and 470 <= y <= 520:
+                savegamecolour = "Green"
+
+            if 530 <= x <= 750 and 570 <= y <= 620:
+                quitgamecolour = "Green"
+
+            screen.blit(text_board, (516, 220))
+            screen.blit(text_board, (516, 320))
+            screen.blit(text_board, (516, 420))
+            screen.blit(text_board, (516, 520))
+            screen.blit(fontsize50.render("PAUSED", False, "red"), (500, 130))
+            screen.blit(fontsize20.render("Resume game", False, resumecolour), (535, 286))
+            screen.blit(fontsize20.render("Settings", False, settingscolour), (563, 386))
+            screen.blit(fontsize20.render("Save game", False, savegamecolour), (554, 486))
+            screen.blit(fontsize20.render("Quit game", False, quitgamecolour), (554, 586))
+
 
         pygame.display.update()
         Clock.tick(FPS)
