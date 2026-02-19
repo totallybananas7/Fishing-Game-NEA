@@ -8,6 +8,10 @@ pygame.init()
 global screen
 screen = pygame.display.set_mode((1280, 720)) #sets the game window size
 
+global current_save_slot
+current_save_slot = None #sets up save slots for later use
+
+
 pygame.display.set_caption("Fishing Game") #sets the title for the game in the window
 FPS = 60 #sets frames per second
 Clock = pygame.time.Clock()
@@ -24,9 +28,9 @@ def main_menu_loop():
     Main_menu_running = True
     BG = pygame.image.load("Assets/Menus/Main_menu_background.png").convert_alpha() #loads background image once
     fontsize20 = pygame.font.Font("PressStart2P-Regular.ttf", 20)
-    main_menu_background_music = pygame.mixer.Sound("Assets/Menus/Main_menu_background_music.mp3") #sets main menu background music file as a variable
-    main_menu_background_music.set_volume(0.05) #sets MMBMF volume to 50%
-    main_menu_background_music.play(-1) #plays the MMBMF infinitely
+    pygame.mixer.music.load("Assets/Menus/Main_menu_background_music.mp3") #sets main menu background music file as a variable
+    pygame.mixer.music.set_volume(0.05) #sets MMBMF volume to 50%
+    pygame.mixer.music.play(-1) #plays the MMBMF infinitely
 
     while Main_menu_running: #all main menu logic here
         for event in pygame.event.get():
@@ -45,15 +49,24 @@ def main_menu_loop():
             menu_mouse_pos = pygame.mouse.get_pos()
             x, y = menu_mouse_pos
 
-            if 530<=x<=750 and 279<=y<=325: #checks to see if mouse coords are nearby text
+            if 530<=x<=750 and 279<=y<=325: #checks to see if mouse coords are nearby load game text
                 main_menu_font_colourLG = "Green"
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    save_menu_loop()
             if 530<=x<=750 and 388<=y<=435:
                 main_menu_font_colourNG = "Green"
                 if event.type == pygame.MOUSEBUTTONDOWN: #if player clicks on new game button
-                    Main_menu_running = False #stops main menu
-                    main_menu_background_music.fadeout(6500) #fades music out over 6.5 seconds
-                    fadeout() #goes to the fadeout subroutine for a smooth transition
-                    main_game() #loads game background
+                    empty_slot = find_empty_slot() #checks to see if any files are available
+                    if empty_slot != None: #if there is one available
+                        global current_save_slot
+                        current_save_slot = empty_slot #assigns number
+                        Main_menu_running = False #stops main menu
+                        pygame.mixer.music.fadeout(6500) #fades music out over 6.5 seconds
+                        fadeout() #goes to the fadeout subroutine for a smooth transition
+                        main_game() #loads game background
+                    else:
+                        print("ALL SLOTS FULL")
+                        pass
 
             if 530<=x<=750 and 493<=y<=541:
                 main_menu_font_colourS = "Green"
@@ -76,6 +89,86 @@ def main_menu_loop():
         # updates display
         pygame.display.update()
         Clock.tick(FPS)
+
+def save_menu_loop():
+    save_menu_running = True
+    BGS = pygame.image.load("Assets/Menus/Save_menu_background.png").convert_alpha()
+    fontsize20 = pygame.font.Font("PressStart2P-Regular.ttf", 20)
+
+    while save_menu_running == True:
+        global current_save_slot
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()  # handles X for quit in window
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                menu_mouse_pos_test = pygame.mouse.get_pos()
+                print("Mouse clicked at", menu_mouse_pos_test)  # debugging tool, shows me where I clicked in terminal
+
+            S1 = "Yellow"
+            S2 = "Yellow"
+            S3 = "Yellow"
+            back = "Yellow"
+
+            menu_mouse_pos = pygame.mouse.get_pos()
+            x, y = menu_mouse_pos
+
+            if 530<=x<=750 and 279<=y<=325: #checks to see if mouse coords are nearby text
+                S1 = "Green"
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    current_save_slot = 1
+                    load_game(player, All_Fish, hour_hand, minute_hand, current_weather, current_save_slot)
+
+            if 530<=x<=750 and 388<=y<=435:
+                S2 = "Green"
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    current_save_slot = 2
+                    load_game(player, All_Fish, hour_hand, minute_hand, current_weather, current_save_slot)
+
+            if 530<=x<=750 and 493<=y<=541:
+                S3 = "Green"
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    current_save_slot = 3
+                    load_game(player, All_Fish, hour_hand, minute_hand, current_weather, current_save_slot)
+
+            if 530<=x<=750 and 600<=y<=647:
+                back = "Green"
+                if event.type == pygame.MOUSEBUTTONDOWN: #if user clicks back button...
+                    save_menu_running = False
+
+            # draws background
+            screen.blit(BGS, (0, 0))
+
+            # draws menu text
+            screen.blit(fontsize20.render("Save 1", False, S1), (555, 294))
+            screen.blit(fontsize20.render("Save 2", False, S2), (565, 403))
+            screen.blit(fontsize20.render("Save 3", False, S3), (563, 509))
+            screen.blit(fontsize20.render("Back", False, back), (555, 616))
+
+            # updates display
+            pygame.display.update()
+            Clock.tick(FPS)
+
+def find_empty_save():
+    for file in range(1,4): #for save file 1,2 and 3
+        filename = f"SaveFile{file}.txt"
+        if not os.path.exists(filename): #checks if the file exists
+            return file #returns first emtpy slot
+    return None #no empty slots left
+
+def load_game(player, All_Fish, hour_hand,minute_hand,current_weather, current_save_slot):
+    #if this is a new game (either selected by new game button or clicking a save file in saves menu without data) load base player stats (empty inv/fishdex/bait/rod, no money, base weight/weight cost), clear weather, 6AM time
+    #if it is an old save (selected through saves menu) the previous player stats, weather and time are loaded
+    filename = f"SaveFile{current_save_slot}.txt"
+    if not os.path.exists(filename):
+        player = Player(0, 0, Starter_rod, No_bait, 0, 50, 100, 0, 0, 0, "idle", False, 40, 310, 345, 0,random.randint(45, 590), None, [], 0, 0, 0, 0)  # instantiate object of class player
+        hour_hand = 6
+        minute_hand = 0
+        current_weather = "Clear"
+        return player
+        main_game()
+
+
 
 def fadeout(fadespeed=1): #defines fadeout function to have a smooth transition and sets the speed of it to 1
     fade = pygame.Surface((1280, 720)) #creates blank surface the size of the screen
@@ -574,6 +667,31 @@ def main_game(): #all game stuff goes in here
     fontsize30 = pygame.font.Font("PressStart2P-Regular.ttf", 30)
     fontsize50 = pygame.font.Font("PressStart2P-Regular.ttf", 50)
 
+    def save_game(player, All_Fish, current_weather, hour_hand, minute_hand, current_save_slot):
+        caught_fish = []
+        for fish in All_Fish:
+            if fish.caught_before == True:
+                caught_fish.append(fish.name)
+        held_fish = []
+        for fish in player.inventory:
+            held_fish.append(fish.name)
+
+        SaveFile = f"SaveFile{current_save_slot}.txt"
+        TextFile = open(SaveFile,"w") #opens file
+        TextFile.write(f"{player.money}\n")
+        TextFile.write(f"{player.held_rod.name}\n")
+        TextFile.write(f"{player.held_bait.name}\n")
+        TextFile.write(f"{player.bait_amount}\n")
+        TextFile.write(f"{player.weight}\n")
+        TextFile.write(f"{player.max_weight}\n")
+        TextFile.write(f"{player.weight_upgrade_cost}\n")
+        TextFile.write(f"{player.unique_fish_caught}\n")
+        TextFile.write(f"{held_fish}\n")
+        TextFile.write(f"{caught_fish}\n")
+        TextFile.write(f"{hour_hand}\n")
+        TextFile.write(f"{minute_hand}\n")
+        TextFile.write(f"{current_weather}\n")
+        TextFile.close()
 
 
 # MAIN GAME LOOP
@@ -617,7 +735,7 @@ def main_game(): #all game stuff goes in here
                     elif 530 <= x <= 750 and 369 <= y <= 420: #settings button
                         pass
                     elif 530 <= x <= 750 and 470 <= y <= 520: #save button
-                        pass
+                        save_game(player, All_Fish, current_weather, hour_hand, minute_hand,current_save_slot)
                     elif 530 <= x <= 750 and 570 <= y <= 620:
                         main_menu_loop()
                         game_running = False
