@@ -3,6 +3,7 @@ import sys
 
 import pygame
 import random
+import os
 from sys import exit
 pygame.init()
 global screen
@@ -56,7 +57,7 @@ def main_menu_loop():
             if 530<=x<=750 and 388<=y<=435:
                 main_menu_font_colourNG = "Green"
                 if event.type == pygame.MOUSEBUTTONDOWN: #if player clicks on new game button
-                    empty_slot = find_empty_slot() #checks to see if any files are available
+                    empty_slot = find_empty_save() #checks to see if any files are available
                     if empty_slot != None: #if there is one available
                         global current_save_slot
                         current_save_slot = empty_slot #assigns number
@@ -156,17 +157,50 @@ def find_empty_save():
             return file #returns first emtpy slot
     return None #no empty slots left
 
-def load_game(player, All_Fish, hour_hand,minute_hand,current_weather, current_save_slot):
+def load_game(Player, All_Fish, hour_hand,minute_hand,current_weather, current_save_slot):
     #if this is a new game (either selected by new game button or clicking a save file in saves menu without data) load base player stats (empty inv/fishdex/bait/rod, no money, base weight/weight cost), clear weather, 6AM time
     #if it is an old save (selected through saves menu) the previous player stats, weather and time are loaded
     filename = f"SaveFile{current_save_slot}.txt"
-    if not os.path.exists(filename):
+    if not os.path.exists(filename): #if a file doesn't exist in that slot, load default gear/time/money/stats/fishdex/inventory...
         player = Player(0, 0, Starter_rod, No_bait, 0, 50, 100, 0, 0, 0, "idle", False, 40, 310, 345, 0,random.randint(45, 590), None, [], 0, 0, 0, 0)  # instantiate object of class player
         hour_hand = 6
         minute_hand = 0
         current_weather = "Clear"
         return player
         main_game()
+    else: #loading an existing save file...
+        filename = open(filename, "r") #opens file
+        money = int(filename.readline()) #taking stats
+        held_rod = filename.readline()
+        held_bait = filename.readline()
+        bait_amount = int(filename.readline())
+        weight = float(filename.readline())
+        max_weight = int(filename.readline())
+        weight_upgrade_cost = int(filename.readline())
+        unique_fish_caught = int(filename.readline())
+        held_fish = eval(filename.readline())
+        caught_fish = eval(filename.readline())
+        hour_hand = int(filename.readline())
+        minute_hand = int(filename.readline())
+        current_weather = filename.readline()
+        filename.close()
+
+        player = Player(money,weight,held_rod,held_bait,bait_amount,max_weight,weight_upgrade_cost,0,0,0,"idle",False,40,310,345,0,random.randint(45,590),None,[],0,0,unique_fish_caught,0)
+        player.inventory = []
+        for fish in All_Fish:
+            if fish.name in held_fish:
+                player.inventory.append(fish)
+            if fish.name in caught_fish:
+                fish.caught_before = True
+            else:
+                fish.caught_before = False
+
+        return player, hour_hand, minute_hand, current_weather
+        main_game()
+
+
+
+
 
 
 
